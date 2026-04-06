@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookzo – Kitchen Sharing Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #FF4D00;
+    --brand2: #FF8A00;
+    --dark: #0D0D0D;
+    --surface: #161616;
+    --card: #1E1E1E;
+    --border: #2A2A2A;
+    --text: #F0EDE8;
+    --muted: #888;
+    --green: #22C55E;
+    --blue: #3B82F6;
+    --gold: #F59E0B;
+    --radius: 16px;
+    --radius-sm: 10px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--dark); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-track { background: var(--dark); }
+  ::-webkit-scrollbar-thumb { background: var(--brand); border-radius:4px; }
+
+  /* ── NOISE OVERLAY ── */
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity:.4;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 40px;
+    background: rgba(13,13,13,0.85);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-family:'Syne',sans-serif; font-weight:800; font-size:1.6rem; color:var(--brand); letter-spacing:-1px; }
+  .logo span { color: var(--text); }
+  .nav-links { display:flex; gap:32px; align-items:center; }
+  .nav-links a { color:var(--muted); text-decoration:none; font-size:.9rem; font-weight:500; transition:.2s; }
+  .nav-links a:hover { color:var(--text); }
+  .nav-right { display:flex; gap:12px; align-items:center; }
+  .btn { padding:10px 22px; border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.9rem; font-weight:500; cursor:pointer; border:none; transition:.2s; }
+  .btn-ghost { background:transparent; color:var(--text); border:1px solid var(--border); }
+  .btn-ghost:hover { border-color:var(--brand); color:var(--brand); }
+  .btn-primary { background:var(--brand); color:#fff; }
+  .btn-primary:hover { background:#e04400; transform:translateY(-1px); }
+  .role-toggle {
+    display:flex; align-items:center; gap:8px; background:var(--surface);
+    border:1px solid var(--border); border-radius:24px; padding:4px 14px;
+    font-size:.8rem; cursor:pointer;
+  }
+  .role-dot { width:8px; height:8px; border-radius:50%; background:var(--green); }
+  #roleLabel { color:var(--text); font-weight:500; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;
+    text-align:center; padding:120px 40px 60px;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,77,0,0.15) 0%, transparent 70%);
+    position:relative; z-index:1;
+  }
+  .hero-badge { display:inline-flex; align-items:center; gap:8px; background:rgba(255,77,0,0.12); border:1px solid rgba(255,77,0,0.3); border-radius:24px; padding:6px 18px; font-size:.8rem; color:var(--brand); margin-bottom:28px; }
+  .hero-badge span { width:6px;height:6px;border-radius:50%;background:var(--brand);animation:pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+  h1 { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(2.8rem,7vw,5.5rem); line-height:1.05; letter-spacing:-2px; margin-bottom:24px; }
+  h1 em { font-style:normal; color:var(--brand); }
+  .hero-sub { font-size:1.15rem; color:var(--muted); max-width:560px; line-height:1.7; margin-bottom:48px; }
+
+  /* ── DUAL CTA ── */
+  .dual-cta { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:60px; }
+  .cta-card {
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+    padding:28px 40px; border-radius:20px; cursor:pointer; transition:.3s;
+    border:2px solid var(--border); background:var(--surface);
+    min-width:200px;
+  }
+  .cta-card:hover { border-color:var(--brand); transform:translateY(-4px); background:rgba(255,77,0,0.08); }
+  .cta-card.active { border-color:var(--brand); background:rgba(255,77,0,0.12); }
+  .cta-icon { font-size:2.8rem; }
+  .cta-title { font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem; }
+  .cta-sub { font-size:.8rem; color:var(--muted); }
+
+  /* ── STATS BAR ── */
+  .stats-bar { display:flex; gap:40px; justify-content:center; flex-wrap:wrap; }
+  .stat { text-align:center; }
+  .stat-num { font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem; color:var(--brand); }
+  .stat-label { font-size:.75rem; color:var(--muted); margin-top:2px; }
+
+  /* ── SECTIONS ── */
+  section { position:relative; z-index:1; padding:80px 40px; max-width:1280px; margin:0 auto; }
+  .section-header { margin-bottom:40px; }
+  .section-tag { font-size:.75rem; font-weight:600; color:var(--brand); letter-spacing:2px; text-transform:uppercase; margin-bottom:10px; }
+  .section-title { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(1.8rem,3.5vw,2.8rem); letter-spacing:-1px; }
+  .section-sub { color:var(--muted); margin-top:8px; font-size:.95rem; }
+
+  /* ── KITCHEN TYPE SELECTOR ── */
+  .kitchen-types { display:flex; gap:12px; margin-bottom:32px; flex-wrap:wrap; }
+  .type-btn {
+    padding:10px 22px; border-radius:30px; border:1.5px solid var(--border);
+    background:transparent; color:var(--muted); cursor:pointer; font-family:'DM Sans',sans-serif;
+    font-size:.9rem; transition:.2s;
+  }
+  .type-btn:hover, .type-btn.active { border-color:var(--brand); color:var(--brand); background:rgba(255,77,0,0.08); }
+
+  /* ── KITCHEN GRID ── */
+  .kitchen-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; }
+  .kitchen-card {
+    background:var(--card); border-radius:var(--radius); border:1px solid var(--border);
+    overflow:hidden; cursor:pointer; transition:.3s; position:relative;
+  }
+  .kitchen-card:hover { border-color:var(--brand); transform:translateY(-4px); box-shadow:0 20px 60px rgba(255,77,0,0.12); }
+  .kitchen-img {
+    width:100%; height:200px; object-fit:cover;
+    background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+    display:flex; align-items:center; justify-content:center; font-size:3rem;
+    position:relative;
+  }
+  .kitchen-img-overlay {
+    position:absolute; inset:0;
+    background:linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8));
+  }
+  .badge {
+    position:absolute; top:12px; left:12px;
+    padding:4px 10px; border-radius:20px; font-size:.7rem; font-weight:600;
+  }
+  .badge-verified { background:rgba(34,197,94,0.2); color:var(--green); border:1px solid rgba(34,197,94,0.3); }
+  .badge-top { background:rgba(245,158,11,0.2); color:var(--gold); border:1px solid rgba(245,158,11,0.3); }
+  .badge-pro { background:rgba(59,130,246,0.2); color:var(--blue); border:1px solid rgba(59,130,246,0.3); }
+  .badge-home { background:rgba(255,77,0,0.2); color:var(--brand); border:1px solid rgba(255,77,0,0.3); }
+  .kitchen-body { padding:18px; }
+  .kitchen-name { font-family:'Syne',sans-serif; font-weight:700; font-size:1.05rem; margin-bottom:4px; }
+  .kitchen-meta { font-size:.8rem; color:var(--muted); display:flex; gap:12px; margin-bottom:12px; }
+  .kitchen-tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:14px; }
+  .tag { padding:3px 9px; border-radius:12px; font-size:.7rem; border:1px solid var(--border); color:var(--muted); }
+  .kitchen-footer { display:flex; justify-content:space-between; align-items:center; }
+  .price { font-family:'Syne',sans-serif; font-weight:700; font-size:1.2rem; color:var(--brand); }
+  .price-sub { font-size:.7rem; color:var(--muted); font-weight:400; }
+  .stars { color:var(--gold); font-size:.85rem; }
+  .distance { font-size:.75rem; color:var(--muted); }
+  .book-btn { padding:8px 18px; background:var(--brand); color:#fff; border:none; border-radius:8px; font-size:.85rem; font-weight:500; cursor:pointer; transition:.2s; }
+  .book-btn:hover { background:#e04400; }
+
+  /* ── SWIPE CARD ── */
+  #swipeSection { display:none; }
+  .swipe-wrapper { display:flex; justify-content:center; align-items:center; padding:40px 0; }
+  .swipe-card {
+    width:360px; max-width:100%; background:var(--card); border-radius:24px;
+    border:1px solid var(--border); overflow:hidden; cursor:grab;
+    transition:transform .15s; position:relative; user-select:none;
+  }
+  .swipe-card:active { cursor:grabbing; }
+  .swipe-actions { display:flex; gap:20px; justify-content:center; margin-top:24px; }
+  .swipe-btn { width:60px;height:60px; border-radius:50%; border:2px solid; display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; background:transparent; transition:.2s; }
+  .swipe-btn.no { border-color:#ef4444; color:#ef4444; }
+  .swipe-btn.no:hover { background:#ef444422; }
+  .swipe-btn.yes { border-color:var(--green); color:var(--green); }
+  .swipe-btn.yes:hover { background:#22c55e22; }
+  .swipe-hint { text-align:center; font-size:.8rem; color:var(--muted); margin-top:12px; }
+
+  /* ── BID SECTION ── */
+  .bid-card {
+    background:var(--card); border-radius:var(--radius); border:1px solid var(--border);
+    padding:24px; display:flex; gap:20px; align-items:flex-start; transition:.2s;
+  }
+  .bid-card:hover { border-color:var(--brand); }
+  .bid-info { flex:1; }
+  .bid-title { font-family:'Syne',sans-serif; font-weight:700; margin-bottom:6px; }
+  .bid-meta { font-size:.82rem; color:var(--muted); margin-bottom:12px; line-height:1.6; }
+  .bid-slot { display:inline-flex; align-items:center; gap:6px; background:rgba(59,130,246,0.1); border:1px solid rgba(59,130,246,0.2); color:var(--blue); padding:4px 12px; border-radius:20px; font-size:.78rem; margin-bottom:14px; }
+  .bid-input-row { display:flex; gap:8px; }
+  .bid-input { flex:1; padding:10px 14px; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.9rem; outline:none; }
+  .bid-input:focus { border-color:var(--brand); }
+  .bid-submit { padding:10px 20px; background:var(--brand); color:#fff; border:none; border-radius:8px; font-weight:500; cursor:pointer; white-space:nowrap; }
+  .bid-timer { text-align:center; min-width:80px; }
+  .bid-timer-num { font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem; color:var(--gold); line-height:1; }
+  .bid-timer-label { font-size:.7rem; color:var(--muted); }
+  .bids-list { display:flex; flex-direction:column; gap:12px; margin-top:16px; }
+  .bid-entry { display:flex; justify-content:space-between; align-items:center; font-size:.85rem; padding:8px 0; border-bottom:1px solid var(--border); }
+  .bid-entry:last-child { border:none; }
+  .bid-winner { color:var(--green); font-weight:600; }
+
+  /* ── DASHBOARD ── */
+  .dashboard { display:none; }
+  .dash-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:32px; }
+  .dash-card { background:var(--card); border-radius:var(--radius-sm); border:1px solid var(--border); padding:20px; }
+  .dash-card-label { font-size:.75rem; color:var(--muted); margin-bottom:8px; }
+  .dash-card-val { font-family:'Syne',sans-serif; font-weight:800; font-size:1.8rem; }
+  .dash-card-sub { font-size:.75rem; color:var(--green); margin-top:4px; }
+  .chart-bar-wrap { display:flex; align-items:flex-end; gap:6px; height:80px; margin-top:12px; }
+  .chart-bar { flex:1; border-radius:4px 4px 0 0; background:var(--brand); opacity:.7; transition:.3s; }
+  .chart-bar:hover { opacity:1; }
+  .suggestion-box { background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.2); border-radius:10px; padding:14px; display:flex; gap:12px; align-items:flex-start; margin-top:12px; }
+  .sug-icon { font-size:1.4rem; }
+  .sug-text { font-size:.85rem; color:var(--text); }
+  .sug-text strong { color:var(--gold); }
+
+  /* ── OWNER DASHBOARD ── */
+  .owner-dash { display:none; }
+
+  /* ── AI CHAT ── */
+  #aiSection {
+    position:fixed; bottom:24px; right:24px; z-index:200;
+  }
+  .ai-toggle {
+    width:56px; height:56px; border-radius:50%; background:var(--brand);
+    border:none; color:#fff; font-size:1.4rem; cursor:pointer;
+    box-shadow:0 8px 32px rgba(255,77,0,0.4); transition:.2s;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ai-toggle:hover { transform:scale(1.08); }
+  .ai-panel {
+    display:none; position:absolute; bottom:68px; right:0;
+    width:360px; max-height:500px; background:var(--surface);
+    border:1px solid var(--border); border-radius:20px;
+    box-shadow:0 24px 80px rgba(0,0,0,0.6);
+    flex-direction:column; overflow:hidden;
+  }
+  .ai-panel.open { display:flex; }
+  .ai-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .ai-title { font-family:'Syne',sans-serif; font-weight:700; font-size:.95rem; }
+  .ai-close { background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.2rem; }
+  .ai-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; min-height:250px; max-height:320px; }
+  .ai-msg { padding:10px 14px; border-radius:12px; font-size:.85rem; line-height:1.5; max-width:85%; }
+  .ai-msg.bot { background:var(--card); color:var(--text); align-self:flex-start; border-radius:4px 12px 12px 12px; }
+  .ai-msg.user { background:var(--brand); color:#fff; align-self:flex-end; border-radius:12px 4px 12px 12px; }
+  .ai-msg.loading { color:var(--muted); font-style:italic; }
+  .ai-input-row { display:flex; gap:8px; padding:12px; border-top:1px solid var(--border); }
+  .ai-input { flex:1; padding:10px 14px; background:var(--card); border:1px solid var(--border); border-radius:8px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.85rem; outline:none; }
+  .ai-input:focus { border-color:var(--brand); }
+  .ai-send { padding:10px 16px; background:var(--brand); color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:.9rem; }
+
+  /* ── GAMIFICATION ── */
+  .level-bar-wrap { background:var(--surface); border-radius:var(--radius); border:1px solid var(--border); padding:24px; margin-bottom:24px; }
+  .level-header { display:flex; justify-content:space-between; margin-bottom:12px; }
+  .level-name { font-family:'Syne',sans-serif; font-weight:700; }
+  .level-badge { padding:4px 12px; background:rgba(245,158,11,0.15); color:var(--gold); border-radius:20px; font-size:.78rem; border:1px solid rgba(245,158,11,0.3); }
+  .level-bar { height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+  .level-fill { height:100%; background:linear-gradient(90deg,var(--brand),var(--brand2)); border-radius:4px; transition:width 1s ease; }
+  .level-info { font-size:.78rem; color:var(--muted); margin-top:8px; }
+  .badges-grid { display:flex; gap:12px; flex-wrap:wrap; }
+  .ach-badge { display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .ach-icon { width:56px; height:56px; border-radius:50%; background:var(--card); border:2px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.5rem; }
+  .ach-icon.earned { border-color:var(--gold); background:rgba(245,158,11,0.1); }
+  .ach-label { font-size:.7rem; color:var(--muted); text-align:center; }
+
+  /* ── LEADERBOARD ── */
+  .lb-row { display:flex; align-items:center; gap:14px; padding:14px; background:var(--card); border-radius:10px; border:1px solid var(--border); margin-bottom:8px; transition:.2s; }
+  .lb-row:hover { border-color:var(--brand); }
+  .lb-rank { font-family:'Syne',sans-serif; font-weight:800; width:28px; text-align:center; }
+  .lb-rank.gold { color:var(--gold); }
+  .lb-rank.silver { color:#94a3b8; }
+  .lb-rank.bronze { color:#92400e; }
+  .lb-avatar { width:40px; height:40px; border-radius:50%; background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+  .lb-info { flex:1; }
+  .lb-name { font-weight:600; font-size:.9rem; }
+  .lb-sub { font-size:.75rem; color:var(--muted); }
+  .lb-score { font-family:'Syne',sans-serif; font-weight:700; color:var(--brand); }
+
+  /* ── BOOKING MODAL ── */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); z-index:300; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:32px; width:500px; max-width:95vw; max-height:90vh; overflow-y:auto; position:relative; }
+  .modal-close { position:absolute; top:16px; right:16px; background:none; border:none; color:var(--muted); cursor:pointer; font-size:1.3rem; }
+  .modal-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; margin-bottom:4px; }
+  .modal-sub { color:var(--muted); font-size:.875rem; margin-bottom:24px; }
+  .form-group { margin-bottom:16px; }
+  .form-label { display:block; font-size:.82rem; color:var(--muted); margin-bottom:6px; }
+  .form-control { width:100%; padding:12px 16px; background:var(--card); border:1px solid var(--border); border-radius:10px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:.9rem; outline:none; transition:.2s; }
+  .form-control:focus { border-color:var(--brand); }
+  .time-slots { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+  .time-slot { padding:7px 14px; border-radius:20px; border:1px solid var(--border); font-size:.8rem; cursor:pointer; transition:.2s; background:transparent; color:var(--text); }
+  .time-slot:hover,.time-slot.active { border-color:var(--brand); color:var(--brand); background:rgba(255,77,0,0.08); }
+  .booking-summary { background:var(--card); border-radius:12px; padding:16px; margin:20px 0; }
+  .summary-row { display:flex; justify-content:space-between; font-size:.85rem; padding:6px 0; border-bottom:1px solid var(--border); }
+  .summary-row:last-child { border:none; font-weight:600; color:var(--text); }
+  .summary-row.total { font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; }
+  .commission-note { font-size:.75rem; color:var(--muted); text-align:center; margin-bottom:16px; }
+  .pay-btn { width:100%; padding:14px; background:var(--brand); color:#fff; border:none; border-radius:12px; font-family:'Syne',sans-serif; font-weight:700; font-size:1rem; cursor:pointer; transition:.2s; }
+  .pay-btn:hover { background:#e04400; }
+  .pay-methods { display:flex; gap:8px; margin-bottom:16px; }
+  .pay-method { flex:1; padding:10px; background:var(--card); border:1.5px solid var(--border); border-radius:8px; font-size:.8rem; text-align:center; cursor:pointer; transition:.2s; }
+  .pay-method.active { border-color:var(--brand); color:var(--brand); }
+
+  /* ── WALLET ── */
+  .wallet-card { background:linear-gradient(135deg,var(--brand),var(--brand2)); border-radius:var(--radius); padding:28px; margin-bottom:24px; }
+  .wallet-label { font-size:.82rem; opacity:.8; margin-bottom:8px; }
+  .wallet-amount { font-family:'Syne',sans-serif; font-weight:800; font-size:2.8rem; }
+  .wallet-sub { font-size:.8rem; opacity:.7; margin-top:4px; }
+  .wallet-txns { display:flex; flex-direction:column; gap:8px; }
+  .txn { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--card); border-radius:10px; border:1px solid var(--border); }
+  .txn-credit { color:var(--green); font-weight:600; }
+  .txn-debit { color:#ef4444; font-weight:600; }
+
+  /* ── TAB NAV ── */
+  .tabs { display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:4px; margin-bottom:32px; width:fit-content; }
+  .tab { padding:10px 22px; border-radius:9px; border:none; background:transparent; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:.9rem; cursor:pointer; transition:.2s; }
+  .tab.active { background:var(--brand); color:#fff; }
+
+  /* ── FOOTER ── */
+  footer { background:var(--surface); border-top:1px solid var(--border); padding:60px 40px 40px; margin-top:80px; position:relative; z-index:1; }
+  .footer-grid { display:grid; grid-template-columns:2fr 1fr 1fr 1fr; gap:40px; max-width:1280px; margin:0 auto 40px; }
+  .footer-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; color:var(--brand); margin-bottom:12px; }
+  .footer-desc { font-size:.85rem; color:var(--muted); line-height:1.7; }
+  .footer-col h4 { font-family:'Syne',sans-serif; font-weight:700; font-size:.9rem; margin-bottom:16px; }
+  .footer-col a { display:block; color:var(--muted); text-decoration:none; font-size:.85rem; margin-bottom:8px; transition:.2s; }
+  .footer-col a:hover { color:var(--brand); }
+  .footer-bottom { max-width:1280px; margin:0 auto; padding-top:24px; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; font-size:.8rem; color:var(--muted); }
+
+  /* ── TOAST ── */
+  #toast {
+    position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:14px 24px; font-size:.875rem; z-index:500;
+    opacity:0; transition:.3s; pointer-events:none; white-space:nowrap;
+    box-shadow:0 12px 40px rgba(0,0,0,0.4);
+  }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  #toast.success { border-color:var(--green); color:var(--green); }
+  #toast.info { border-color:var(--brand); color:var(--brand); }
+
+  /* ── SECTION DISPLAY ── */
+  .main-content > section { display:none; }
+  .main-content > section.active { display:block; }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:768px) {
+    nav { padding:14px 20px; }
+    .nav-links { display:none; }
+    section { padding:60px 20px; }
+    .footer-grid { grid-template-columns:1fr; }
+    .footer-bottom { flex-direction:column; gap:8px; }
+    h1 { font-size:2.4rem; }
+    .dual-cta { flex-direction:column; align-items:center; }
+    .ai-panel { width:calc(100vw - 48px); right:-12px; }
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+  .hero-badge { animation: fadeUp .5s ease forwards; }
+  h1 { animation: fadeUp .6s .1s ease both; }
+  .hero-sub { animation: fadeUp .6s .2s ease both; }
+  .dual-cta { animation: fadeUp .6s .3s ease both; }
+  .stats-bar { animation: fadeUp .6s .4s ease both; }
+
+  .skeleton { background:linear-gradient(90deg,var(--card) 25%,var(--border) 50%,var(--card) 75%); background-size:200%; animation:shimmer 1.5s infinite; }
+  @keyframes shimmer { to { background-position:-200% 0; } }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Cook<span>zo</span></div>
+  <div class="nav-links">
+    <a href="#" onclick="showTab('browse')">Browse Kitchens</a>
+    <a href="#" onclick="showTab('bids')">Live Bids</a>
+    <a href="#" onclick="showTab('dashboard')">Dashboard</a>
+    <a href="#" onclick="showTab('wallet')">Wallet</a>
+    <a href="#" onclick="showTab('leaderboard')">Leaderboard</a>
+  </div>
+  <div class="nav-right">
+    <div class="role-toggle" onclick="toggleRole()">
+      <div class="role-dot" id="roleDot"></div>
+      <span id="roleLabel">Kitchen Seeker</span>
+      <span style="color:var(--muted);font-size:.75rem">⇅ switch</span>
+    </div>
+    <button class="btn btn-ghost" onclick="showModal('loginModal')">Login</button>
+    <button class="btn btn-primary" onclick="showModal('loginModal')">Sign Up</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div id="heroSection">
+  <div class="hero">
+    <div class="hero-badge"><span></span> Chennai's #1 Kitchen Sharing Platform</div>
+    <h1>Rent a <em>Kitchen</em>,<br>Launch Your <em>Brand</em></h1>
+    <p class="hero-sub">Connect with idle professional restaurant kitchens or home kitchens. Start your food business today — no setup cost, zero hassle.</p>
+    <div class="dual-cta">
+      <div class="cta-card" onclick="showTab('browse'); scrollToMain();">
+        <div class="cta-icon">🍳</div>
+        <div class="cta-title">Need a Kitchen</div>
+        <div class="cta-sub">Browse & book kitchen slots</div>
+      </div>
+      <div class="cta-card" onclick="toggleRole('owner'); scrollToMain();">
+        <div class="cta-icon">🏨</div>
+        <div class="cta-title">List My Kitchen</div>
+        <div class="cta-sub">Earn from idle kitchen hours</div>
+      </div>
+    </div>
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-num">240+</div><div class="stat-label">Kitchens Listed</div></div>
+      <div class="stat"><div class="stat-num">1,200+</div><div class="stat-label">Active Brands</div></div>
+      <div class="stat"><div class="stat-num">₹48L+</div><div class="stat-label">Earnings Generated</div></div>
+      <div class="stat"><div class="stat-num">4.8★</div><div class="stat-label">Avg. Rating</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="main-content" id="mainContent" style="max-width:1280px;margin:0 auto;padding:0 40px 40px;">
+
+  <!-- BROWSE KITCHENS -->
+  <section id="browseSection" class="active">
+    <div class="section-header">
+      <div class="section-tag">Browse</div>
+      <div class="section-title">Find Your Perfect Kitchen</div>
+      <div class="section-sub">Professional & home kitchens across Chennai</div>
+    </div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:24px;">
+      <div class="kitchen-types">
+        <button class="type-btn active" onclick="filterKitchens('all',this)">All</button>
+        <button class="type-btn" onclick="filterKitchens('professional',this)">🏨 Professional</button>
+        <button class="type-btn" onclick="filterKitchens('home',this)">🏠 Home Kitchen</button>
+        <button class="type-btn" onclick="showSwipe()">↔ Swipe Mode</button>
+      </div>
+      <input class="form-control" style="max-width:240px" placeholder="🔍 Search area, cuisine..." oninput="searchKitchens(this.value)">
+    </div>
+
+    <div class="kitchen-grid" id="kitchenGrid"></div>
+  </section>
+
+  <!-- BIDS SECTION -->
+  <section id="bidsSection">
+    <div class="section-header">
+      <div class="section-tag">Live Bidding</div>
+      <div class="section-title">Bid on Kitchen Slots</div>
+      <div class="section-sub">Restaurant owners post available slots — place your best offer</div>
+    </div>
+    <div id="bidsContainer"></div>
+  </section>
+
+  <!-- DASHBOARD SEEKER -->
+  <section id="dashboardSection">
+    <div class="section-header">
+      <div class="section-tag">Your Hub</div>
+      <div class="section-title">Dashboard</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchDash('seeker',this)">As Seeker</button>
+      <button class="tab" onclick="switchDash('owner',this)">As Owner</button>
+    </div>
+
+    <!-- SEEKER DASH -->
+    <div id="seekerDash">
+      <div class="level-bar-wrap">
+        <div class="level-header">
+          <div>
+            <div class="level-name">🔥 Krish S.</div>
+            <div style="font-size:.8rem;color:var(--muted)">Pro Kitchen User</div>
+          </div>
+          <div class="level-badge">⭐ 2,340 pts</div>
+        </div>
+        <div class="level-bar"><div class="level-fill" id="levelFill" style="width:0%"></div></div>
+        <div class="level-info">660 pts to reach <strong>Elite Partner</strong></div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="dash-card"><div class="dash-card-label">Total Bookings</div><div class="dash-card-val">14</div><div class="dash-card-sub">↑ 3 this week</div></div>
+        <div class="dash-card"><div class="dash-card-label">Hours Used</div><div class="dash-card-val">38h</div><div class="dash-card-sub">↑ 6h this week</div></div>
+        <div class="dash-card"><div class="dash-card-label">Wallet Credits</div><div class="dash-card-val">₹840</div><div class="dash-card-sub">1 free hour close</div></div>
+        <div class="dash-card"><div class="dash-card-label">Streak</div><div class="dash-card-val">🔥 7d</div><div class="dash-card-sub">Don't break it!</div></div>
+      </div>
+
+      <div style="margin-bottom:32px;">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:16px;">Weekly Activity</div>
+        <div class="chart-bar-wrap" id="seekerChart"></div>
+        <div style="display:flex;gap:6px;margin-top:4px;font-size:.7rem;color:var(--muted);">
+          <span style="flex:1;text-align:center">M</span><span style="flex:1;text-align:center">T</span><span style="flex:1;text-align:center">W</span>
+          <span style="flex:1;text-align:center">T</span><span style="flex:1;text-align:center">F</span><span style="flex:1;text-align:center">S</span><span style="flex:1;text-align:center">S</span>
+        </div>
+      </div>
+
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin-bottom:16px;">Achievements</div>
+      <div class="badges-grid" id="badges"></div>
+    </div>
+
+    <!-- OWNER DASH -->
+    <div id="ownerDash" style="display:none;">
+      <div class="dash-grid">
+        <div class="dash-card"><div class="dash-card-label">This Month Earnings</div><div class="dash-card-val">₹32K</div><div class="dash-card-sub" style="color:var(--brand)">Earned via Cookzo</div></div>
+        <div class="dash-card"><div class="dash-card-label">Occupancy Rate</div><div class="dash-card-val">74%</div><div class="dash-card-sub">↑ 8% vs last month</div></div>
+        <div class="dash-card"><div class="dash-card-label">Active Bookings</div><div class="dash-card-val">3</div><div class="dash-card-sub">Next: 3PM today</div></div>
+        <div class="dash-card"><div class="dash-card-label">Rating</div><div class="dash-card-val">4.9★</div><div class="dash-card-sub">Top Kitchen Host 🏆</div></div>
+      </div>
+      <div class="suggestion-box">
+        <div class="sug-icon">💡</div>
+        <div class="sug-text"><strong>Smart Suggestion:</strong> Your kitchen is idle 3–6 PM on weekdays. Raising the rate by ₹30/hr could earn you an extra <strong>₹2,700/month</strong>. Want to update your listing?
+          <br><button class="btn btn-primary" style="margin-top:10px;padding:8px 16px;font-size:.82rem;" onclick="showToast('Listing updated!','success')">Update Now</button>
+        </div>
+      </div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;margin:24px 0 16px;">Revenue Trend</div>
+      <div class="chart-bar-wrap" id="ownerChart"></div>
+    </div>
+  </section>
+
+  <!-- WALLET -->
+  <section id="walletSection">
+    <div class="section-header">
+      <div class="section-tag">Finances</div>
+      <div class="section-title">Your Wallet</div>
+    </div>
+    <div class="wallet-card">
+      <div class="wallet-label">Available Balance</div>
+      <div class="wallet-amount">₹840</div>
+      <div class="wallet-sub">+ 120 loyalty points ≈ ₹60 credits</div>
+    </div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;margin-bottom:16px;">Recent Transactions</div>
+    <div class="wallet-txns" id="walletTxns"></div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="leaderboardSection">
+    <div class="section-header">
+      <div class="section-tag">Rankings</div>
+      <div class="section-title">Weekly Leaderboard</div>
+      <div class="section-sub">Top earners & most active users this week</div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="switchLB('earners',this)">Top Earners</button>
+      <button class="tab" onclick="switchLB('users',this)">Top Users</button>
+    </div>
+    <div id="lbContainer"></div>
+  </section>
+
+  <!-- AI ASSISTANT -->
+  <section id="aiSection2">
+    <div class="section-header">
+      <div class="section-tag">Powered by Claude AI</div>
+      <div class="section-title">Cookzo AI Assistant</div>
+      <div class="section-sub">Get instant help finding kitchens, pricing advice, and business insights</div>
+    </div>
+    <div style="background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:28px;max-width:700px;">
+      <div style="font-size:.85rem;color:var(--muted);margin-bottom:16px;">💬 Ask anything about kitchens, pricing, or how to grow your food brand...</div>
+      <div id="aiMessages2" style="display:flex;flex-direction:column;gap:10px;min-height:150px;margin-bottom:16px;"></div>
+      <div style="display:flex;gap:8px;">
+        <input class="form-control" id="aiInput2" placeholder="E.g. Best kitchen for biryani in Anna Nagar?" onkeypress="if(event.key==='Enter')sendAI2()">
+        <button class="btn btn-primary" onclick="sendAI2()">Ask AI</button>
+      </div>
+    </div>
+  </section>
+
+</div><!-- end main content -->
+
+<!-- AI CHAT BUBBLE -->
+<div id="aiSection">
+  <button class="ai-toggle" onclick="toggleAI()" title="AI Assistant">✦</button>
+  <div class="ai-panel" id="aiPanel">
+    <div class="ai-header">
+      <div class="ai-title">✦ Cookzo AI</div>
+      <button class="ai-close" onclick="toggleAI()">✕</button>
+    </div>
+    <div class="ai-messages" id="aiMessages">
+      <div class="ai-msg bot">Hi! I'm Cookzo AI. Ask me anything — kitchen recommendations, pricing tips, how to grow your food brand 🍳</div>
+    </div>
+    <div class="ai-input-row">
+      <input class="ai-input" id="aiInput" placeholder="Ask anything..." onkeypress="if(event.key==='Enter')sendAI()">
+      <button class="ai-send" onclick="sendAI()">↑</button>
+    </div>
+  </div>
+</div>
+
+<!-- SWIPE OVERLAY -->
+<div class="modal-overlay" id="swipeModal">
+  <div style="max-width:420px;width:95vw;">
+    <div style="text-align:center;margin-bottom:24px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:var(--text)">Swipe Mode 🔥</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-top:4px;">Swipe right to save, left to skip</div>
+    </div>
+    <div class="swipe-card" id="swipeCard"></div>
+    <div class="swipe-actions">
+      <button class="swipe-btn no" onclick="swipeCard(-1)">✕</button>
+      <button class="swipe-btn yes" onclick="swipeCard(1)">♥</button>
+    </div>
+    <div class="swipe-hint">or drag the card</div>
+    <div style="text-align:center;margin-top:20px;"><button class="btn btn-ghost" onclick="closeModal('swipeModal')">Exit Swipe Mode</button></div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('bookingModal')">✕</button>
+    <div class="modal-title" id="bookingTitle">Book Kitchen</div>
+    <div class="modal-sub" id="bookingSubtitle">Secure your slot — payment only via Cookzo</div>
+
+    <div class="form-group">
+      <label class="form-label">Booking Date</label>
+      <input type="date" class="form-control" id="bookDate">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Select Time Slot</label>
+      <div class="time-slots" id="timeSlots"></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Duration (hours)</label>
+      <select class="form-control" id="bookHours" onchange="updateSummary()">
+        <option value="1">1 hour</option>
+        <option value="2">2 hours</option>
+        <option value="3">3 hours</option>
+        <option value="4">4 hours</option>
+      </select>
+    </div>
+
+    <div class="booking-summary" id="bookingSummary"></div>
+
+    <div class="form-group">
+      <label class="form-label">Payment Method</label>
+      <div class="pay-methods">
+        <div class="pay-method active" onclick="selectPay(this)">UPI</div>
+        <div class="pay-method" onclick="selectPay(this)">Wallet ₹840</div>
+        <div class="pay-method" onclick="selectPay(this)">Card</div>
+      </div>
+    </div>
+    <div class="commission-note">🔒 Secure payment via Cookzo • Commission included • Escrow protected</div>
+    <button class="pay-btn" onclick="confirmBooking()">Confirm & Pay</button>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal" style="max-width:400px;">
+    <button class="modal-close" onclick="closeModal('loginModal')">✕</button>
+    <div class="modal-title">Welcome to Cookzo</div>
+    <div class="modal-sub">Sign in or create your account</div>
+    <div class="tabs" style="margin-bottom:20px;">
+      <button class="tab active" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Login</button>
+      <button class="tab" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Sign Up</button>
+    </div>
+    <div class="form-group"><label class="form-label">Phone / Email</label><input class="form-control" placeholder="Enter phone or email"></div>
+    <div class="form-group"><label class="form-label">OTP / Password</label><input class="form-control" type="password" placeholder="Enter OTP or password"></div>
+    <button class="pay-btn" onclick="closeModal('loginModal');showToast('Welcome back, Krish! 🎉','success')">Continue</button>
+    <div style="text-align:center;margin-top:16px;font-size:.8rem;color:var(--muted);">By continuing, you agree to Cookzo's Terms & Privacy Policy</div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand">Cookzo</div>
+      <p class="footer-desc">Chennai's kitchen sharing marketplace connecting food entrepreneurs with idle professional kitchens. Earn more, waste less.</p>
+    </div>
+    <div class="footer-col">
+      <h4>For Seekers</h4>
+      <a href="#">Browse Kitchens</a>
+      <a href="#">How it Works</a>
+      <a href="#">Pricing</a>
+      <a href="#">Loyalty Rewards</a>
+    </div>
+    <div class="footer-col">
+      <h4>For Owners</h4>
+      <a href="#">List Kitchen</a>
+      <a href="#">Dashboard</a>
+      <a href="#">Earnings Guide</a>
+      <a href="#">Host Resources</a>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <a href="#">About Us</a>
+      <a href="#">Blog</a>
+      <a href="#">Careers</a>
+      <a href="#">Support</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 Cookzo. All rights reserved.</span>
+    <span>Made with ❤️ in Chennai</span>
+  </div>
+</footer>
+
+<script>
+// ── DATA ──
+const kitchens = [
+  { id:1, name:"The Grand Spice Kitchen", type:"professional", area:"Anna Nagar", rating:4.9, price:450, tag:"veg", distance:"1.2 km", badges:["verified","top"], emoji:"🏨", cuisine:["South Indian","Continental"], hours:"2PM–6PM", idle:"3–6 PM" },
+  { id:2, name:"Chef's Hub Pro Kitchen", type:"professional", area:"T. Nagar", rating:4.7, price:380, tag:"both", distance:"2.8 km", badges:["verified"], emoji:"🍽️", cuisine:["North Indian","Bakery"], hours:"3PM–8PM", idle:"3–5 PM" },
+  { id:3, name:"Savita's Home Kitchen", type:"home", area:"Velachery", rating:4.6, price:180, tag:"veg", distance:"3.4 km", badges:["home"], emoji:"🏠", cuisine:["Tiffin","Sweets"], hours:"6AM–12PM", idle:"Morning" },
+  { id:4, name:"Coastal Flavors Pro", type:"professional", area:"OMR", rating:4.8, price:520, tag:"non-veg", distance:"5.1 km", badges:["verified","top"], emoji:"🦞", cuisine:["Seafood","Biryani"], hours:"1PM–7PM", idle:"2–5 PM" },
+  { id:5, name:"Meena's Kitchen Space", type:"home", area:"Adyar", rating:4.4, price:150, tag:"veg", distance:"4.2 km", badges:["home"], emoji:"🥘", cuisine:["Chettinad","Tiffin"], hours:"7AM–1PM", idle:"Morning" },
+  { id:6, name:"Hotel Raj's Pro Kitchen", type:"professional", area:"Egmore", rating:4.7, price:400, tag:"both", distance:"2.1 km", badges:["verified"], emoji:"⭐", cuisine:["Multi-cuisine","Tandoor"], hours:"2PM–9PM", idle:"2–6 PM" },
+];
+
+const bidsData = [
+  { id:1, name:"The Grand Spice Kitchen", area:"Anna Nagar", slot:"3PM – 6PM", basePrice:400, currentBid:520, bids:[{name:"Arjun K.",amt:520},{name:"Priya M.",amt:490},{name:"Ravi T.",amt:460}], timer:47, emoji:"🏨" },
+  { id:2, name:"Chef's Hub Pro Kitchen", area:"T. Nagar", slot:"5PM – 8PM", basePrice:350, currentBid:380, bids:[{name:"Sundar R.",amt:380},{name:"Lakshmi V.",amt:360}], timer:112, emoji:"🍽️" },
+];
+
+const txns = [
+  { label:"Booking – Anna Nagar Kitchen", date:"Apr 5", amt:"-₹900", type:"debit" },
+  { label:"Cashback Reward (5th booking)", date:"Apr 4", amt:"+₹200", type:"credit" },
+  { label:"Booking – T. Nagar Kitchen", date:"Apr 2", amt:"-₹760", type:"debit" },
+  { label:"Referral Bonus", date:"Mar 30", amt:"+₹100", type:"credit" },
+  { label:"Booking – OMR Kitchen", date:"Mar 28", amt:"-₹1,040", type:"debit" },
+];
+
+const earnersLB = [
+  { name:"Rajesh Iyer", sub:"Hotel Spice, Anna Nagar", score:"₹48,200", emoji:"🏆" },
+  { name:"Meenakshi S.", sub:"Home Kitchen, Velachery", score:"₹31,500", emoji:"🥈" },
+  { name:"Coastal Flavors", sub:"OMR Pro Kitchen", score:"₹28,000", emoji:"🥉" },
+  { name:"Chef's Hub", sub:"T. Nagar", score:"₹22,400", emoji:"👨‍🍳" },
+  { name:"Hotel Raj", sub:"Egmore", score:"₹18,700", emoji:"⭐" },
+];
+
+const usersLB = [
+  { name:"Krish S.", sub:"14 bookings • 38 hrs", score:"2340 pts", emoji:"🔥" },
+  { name:"Arjun Kumar", sub:"11 bookings • 30 hrs", score:"1980 pts", emoji:"🍳" },
+  { name:"Priya M.", sub:"9 bookings • 24 hrs", score:"1560 pts", emoji:"🌟" },
+  { name:"Ravi Teja", sub:"7 bookings • 19 hrs", score:"1240 pts", emoji:"🎯" },
+  { name:"Sundar R.", sub:"6 bookings • 16 hrs", score:"980 pts", emoji:"✨" },
+];
+
+const achievementsList = [
+  { icon:"🍳", label:"First Booking", earned:true },
+  { icon:"🔥", label:"7-Day Streak", earned:true },
+  { icon:"🌟", label:"5 Kitchens Tried", earned:true },
+  { icon:"💎", label:"10 Bookings", earned:false },
+  { icon:"🏆", label:"Elite Partner", earned:false },
+  { icon:"👑", label:"Top User", earned:false },
+];
+
+// ── STATE ──
+let currentRole = 'seeker';
+let currentKitchenFilter = 'all';
+let currentBookingKitchen = null;
+let selectedTimeSlot = null;
+let swipeIndex = 0;
+let aiOpen = false;
+
+// ── INIT ──
+window.onload = () => {
+  renderKitchens(kitchens);
+  renderBids();
+  renderWallet();
+  renderLeaderboard('earners');
+  renderCharts();
+  renderBadges();
+  setBookDate();
+  animateLevelBar();
+};
+
+function animateLevelBar() {
+  setTimeout(() => { document.getElementById('levelFill').style.width = '78%'; }, 500);
+}
+
+// ── NAVIGATION ──
+function showTab(tab) {
+  document.querySelectorAll('.main-content > section').forEach(s => s.classList.remove('active'));
+  document.getElementById('mainContent').scrollIntoView({ behavior:'smooth' });
+  const map = { browse:'browseSection', bids:'bidsSection', dashboard:'dashboardSection', wallet:'walletSection', leaderboard:'leaderboardSection' };
+  const el = document.getElementById(map[tab]);
+  if(el) el.classList.add('active');
+}
+
+function scrollToMain() {
+  document.getElementById('mainContent').scrollIntoView({ behavior:'smooth' });
+}
+
+// ── ROLE TOGGLE ──
+function toggleRole(force) {
+  currentRole = force || (currentRole === 'seeker' ? 'owner' : 'seeker');
+  document.getElementById('roleLabel').textContent = currentRole === 'seeker' ? 'Kitchen Seeker' : 'Kitchen Owner';
+  document.getElementById('roleDot').style.background = currentRole === 'seeker' ? 'var(--green)' : 'var(--gold)';
+  showToast(currentRole === 'seeker' ? '🍳 Switched to Seeker mode' : '🏨 Switched to Owner mode', 'info');
+}
+
+// ── KITCHEN CARDS ──
+function renderKitchens(list) {
+  const grid = document.getElementById('kitchenGrid');
+  grid.innerHTML = list.map(k => `
+    <div class="kitchen-card" onclick="openBooking(${k.id})">
+      <div class="kitchen-img">
+        <span style="font-size:4rem;z-index:1">${k.emoji}</span>
+        <div class="kitchen-img-overlay"></div>
+        ${k.badges.map(b => `<span class="badge badge-${b === 'verified' ? 'verified' : b === 'top' ? 'top' : b === 'home' ? 'home' : 'pro'}">${b === 'verified' ? '✓ Verified' : b === 'top' ? '🏆 Top Rated' : b === 'home' ? '🏠 Home' : 'PRO'}</span>`).join('')}
+      </div>
+      <div class="kitchen-body">
+        <div class="kitchen-name">${k.name}</div>
+        <div class="kitchen-meta">
+          <span>📍 ${k.area}</span>
+          <span>${k.distance}</span>
+          <span class="stars">★ ${k.rating}</span>
+        </div>
+        <div class="kitchen-tags">
+          ${k.tag === 'veg' ? '<span class="tag" style="color:#22c55e;border-color:#22c55e44">🟢 Veg</span>' : k.tag === 'non-veg' ? '<span class="tag" style="color:#ef4444;border-color:#ef444444">🔴 Non-Veg</span>' : '<span class="tag">🟡 Both</span>'}
+          ${k.cuisine.map(c => `<span class="tag">${c}</span>`).join('')}
+          <span class="tag" style="color:var(--blue);border-color:#3b82f644">⏰ ${k.hours}</span>
+        </div>
+        <div class="kitchen-footer">
+          <div>
+            <div class="price">₹${k.price}<span class="price-sub">/hr</span></div>
+            <div style="font-size:.7rem;color:var(--muted)">Bring own raw materials</div>
+          </div>
+          <button class="book-btn" onclick="event.stopPropagation();openBooking(${k.id})">Book Now</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterKitchens(type, btn) {
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  currentKitchenFilter = type;
+  const filtered = type === 'all' ? kitchens : kitchens.filter(k => k.type === type);
+  renderKitchens(filtered);
+}
+
+function searchKitchens(q) {
+  const filtered = kitchens.filter(k =>
+    k.name.toLowerCase().includes(q.toLowerCase()) ||
+    k.area.toLowerCase().includes(q.toLowerCase()) ||
+    k.cuisine.some(c => c.toLowerCase().includes(q.toLowerCase()))
+  );
+  renderKitchens(filtered);
+}
+
+// ── SWIPE MODE ──
+function showSwipe() {
+  swipeIndex = 0;
+  loadSwipeCard();
+  showModal('swipeModal');
+}
+
+function loadSwipeCard() {
+  const k = kitchens[swipeIndex % kitchens.length];
+  document.getElementById('swipeCard').innerHTML = `
+    <div class="kitchen-img" style="height:240px;border-radius:0">
+      <span style="font-size:5rem;z-index:1">${k.emoji}</span>
+      <div class="kitchen-img-overlay"></div>
+      ${k.badges.map(b => `<span class="badge badge-${b === 'verified' ? 'verified' : b === 'top' ? 'top' : 'home'}">${b === 'verified' ? '✓ Verified' : b === 'top' ? '🏆 Top' : '🏠 Home'}</span>`).join('')}
+    </div>
+    <div class="kitchen-body">
+      <div class="kitchen-name">${k.name}</div>
+      <div class="kitchen-meta"><span>📍 ${k.area}</span><span>${k.distance}</span><span class="stars">★ ${k.rating}</span></div>
+      <div class="kitchen-footer" style="margin-top:8px;">
+        <div class="price">₹${k.price}<span class="price-sub">/hr</span></div>
+        <div style="font-size:.8rem;color:var(--muted)">${k.hours}</div>
+      </div>
+    </div>
+  `;
+}
+
+function swipeCard(dir) {
+  const card = document.getElementById('swipeCard');
+  card.style.transform = `translateX(${dir * 120}%) rotate(${dir * 12}deg)`;
+  card.style.opacity = '0';
+  setTimeout(() => {
+    if(dir === 1) showToast('💚 Saved to your list!', 'success');
+    swipeIndex++;
+    card.style.transition = 'none';
+    card.style.transform = '';
+    card.style.opacity = '1';
+    loadSwipeCard();
+    setTimeout(() => { card.style.transition = ''; }, 50);
+  }, 300);
+}
+
+// ── BIDS ──
+function renderBids() {
+  document.getElementById('bidsContainer').innerHTML = bidsData.map(b => `
+    <div class="bid-card" style="margin-bottom:20px;flex-direction:column;">
+      <div style="display:flex;gap:20px;align-items:flex-start">
+        <div class="bid-info">
+          <div class="bid-title">${b.emoji} ${b.name}</div>
+          <div class="bid-meta">📍 ${b.area} &nbsp;|&nbsp; Base Price: ₹${b.basePrice}/hr &nbsp;|&nbsp; Current Highest: <strong style="color:var(--green)">₹${b.currentBid}</strong></div>
+          <div class="bid-slot">⏰ Available: ${b.slot}</div>
+          <div class="bid-input-row">
+            <input class="bid-input" id="bidInput${b.id}" placeholder="Your offer (e.g. ₹550)" type="number">
+            <button class="bid-submit" onclick="placeBid(${b.id})">Place Bid</button>
+          </div>
+        </div>
+        <div class="bid-timer">
+          <div class="bid-timer-num" id="timer${b.id}">${formatTime(b.timer * 60)}</div>
+          <div class="bid-timer-label">Ends in</div>
+        </div>
+      </div>
+      <div class="bids-list">
+        ${b.bids.map((bd,i) => `
+          <div class="bid-entry">
+            <span>${i === 0 ? '🏆 ' : ''}${bd.name}</span>
+            <span class="${i === 0 ? 'bid-winner' : ''}">₹${bd.amt}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  startTimers();
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs/60), s = secs%60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function startTimers() {
+  bidsData.forEach(b => {
+    let secs = b.timer * 60;
+    const el = document.getElementById(`timer${b.id}`);
+    setInterval(() => {
+      if(secs > 0) { secs--; if(el) el.textContent = formatTime(secs); }
+    }, 1000);
+  });
+}
+
+function placeBid(id) {
+  const val = document.getElementById(`bidInput${id}`).value;
+  if(!val) { showToast('Enter a bid amount','info'); return; }
+  showToast(`🎯 Bid of ₹${val} placed! You'll be notified.`, 'success');
+  document.getElementById(`bidInput${id}`).value = '';
+}
+
+// ── BOOKING MODAL ──
+function openBooking(id) {
+  currentBookingKitchen = kitchens.find(k => k.id === id);
+  if(!currentBookingKitchen) return;
+  document.getElementById('bookingTitle').textContent = `Book: ${currentBookingKitchen.name}`;
+  document.getElementById('bookingSubtitle').textContent = `📍 ${currentBookingKitchen.area} • ₹${currentBookingKitchen.price}/hr`;
+  renderTimeSlots();
+  updateSummary();
+  showModal('bookingModal');
+}
+
+function setBookDate() {
+  const d = new Date();
+  d.setDate(d.getDate()+1);
+  document.getElementById('bookDate').value = d.toISOString().split('T')[0];
+}
+
+function renderTimeSlots() {
+  const slots = ['9:00 AM','10:00 AM','12:00 PM','2:00 PM','3:00 PM','5:00 PM','7:00 PM'];
+  selectedTimeSlot = null;
+  document.getElementById('timeSlots').innerHTML = slots.map((s,i) => `
+    <button class="time-slot" onclick="selectSlot(this,'${s}')">${s}</button>
+  `).join('');
+}
+
+function selectSlot(btn, slot) {
+  document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedTimeSlot = slot;
+  updateSummary();
+}
+
+function updateSummary() {
+  if(!currentBookingKitchen) return;
+  const hrs = parseInt(document.getElementById('bookHours').value) || 1;
+  const base = currentBookingKitchen.price * hrs;
+  const commission = Math.round(base * 0.1);
+  const total = base + commission;
+  document.getElementById('bookingSummary').innerHTML = `
+    <div class="summary-row"><span>Kitchen Rate</span><span>₹${currentBookingKitchen.price}/hr × ${hrs}h</span></div>
+    <div class="summary-row"><span>Cookzo Commission (10%)</span><span>₹${commission}</span></div>
+    <div class="summary-row"><span>Loyalty Discount</span><span style="color:var(--green)">-₹50</span></div>
+    <div class="summary-row total"><span>Total Payable</span><span style="color:var(--brand)">₹${total - 50}</span></div>
+  `;
+}
+
+function selectPay(el) {
+  document.querySelectorAll('.pay-method').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function confirmBooking() {
+  if(!selectedTimeSlot) { showToast('Please select a time slot','info'); return; }
+  closeModal('bookingModal');
+  showToast('🎉 Booking Confirmed! Check your dashboard.','success');
+}
+
+// ── CHARTS ──
+function renderCharts() {
+  const seekerData = [2, 4, 1, 6, 3, 8, 5];
+  const ownerData = [8200, 6500, 9100, 7800, 11200, 9600, 13400];
+  const maxS = Math.max(...seekerData);
+  const maxO = Math.max(...ownerData);
+  document.getElementById('seekerChart').innerHTML = seekerData.map(v => `
+    <div class="chart-bar" style="height:${(v/maxS)*100}%" title="${v} hours"></div>
+  `).join('');
+  document.getElementById('ownerChart').innerHTML = ownerData.map(v => `
+    <div class="chart-bar" style="height:${(v/maxO)*100}%;background:var(--gold)" title="₹${v}"></div>
+  `).join('');
+}
+
+function switchDash(type, btn) {
+  document.querySelectorAll('#dashboardSection .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('seekerDash').style.display = type === 'seeker' ? 'block' : 'none';
+  document.getElementById('ownerDash').style.display = type === 'owner' ? 'block' : 'none';
+}
+
+// ── BADGES ──
+function renderBadges() {
+  document.getElementById('badges').innerHTML = achievementsList.map(a => `
+    <div class="ach-badge">
+      <div class="ach-icon ${a.earned ? 'earned' : ''}" title="${a.label}">${a.icon}</div>
+      <div class="ach-label" style="color:${a.earned ? 'var(--gold)' : 'var(--muted)'}">${a.label}</div>
+    </div>
+  `).join('');
+}
+
+// ── WALLET ──
+function renderWallet() {
+  document.getElementById('walletTxns').innerHTML = txns.map(t => `
+    <div class="txn">
+      <div>
+        <div style="font-weight:500;font-size:.88rem">${t.label}</div>
+        <div style="font-size:.75rem;color:var(--muted)">${t.date}</div>
+      </div>
+      <div class="${t.type === 'credit' ? 'txn-credit' : 'txn-debit'}">${t.amt}</div>
+    </div>
+  `).join('');
+}
+
+// ── LEADERBOARD ──
+function renderLeaderboard(type) {
+  const data = type === 'earners' ? earnersLB : usersLB;
+  const ranks = ['gold','silver','bronze','',''];
+  document.getElementById('lbContainer').innerHTML = data.map((u,i) => `
+    <div class="lb-row">
+      <div class="lb-rank ${ranks[i] || ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`}</div>
+      <div class="lb-avatar">${u.emoji}</div>
+      <div class="lb-info">
+        <div class="lb-name">${u.name}</div>
+        <div class="lb-sub">${u.sub}</div>
+      </div>
+      <div class="lb-score">${u.score}</div>
+    </div>
+  `).join('');
+}
+
+function switchLB(type, btn) {
+  document.querySelectorAll('#leaderboardSection .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeaderboard(type);
+}
+
+// ── MODAL HELPERS ──
+function showModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── TOAST ──
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `show ${type}`;
+  setTimeout(() => { t.className = ''; }, 3000);
+}
+
+// ── AI CHAT (Claude API) ──
+function toggleAI() {
+  aiOpen = !aiOpen;
+  document.getElementById('aiPanel').classList.toggle('open', aiOpen);
+}
+
+async function sendAI() {
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+  appendAIMsg(msg, 'user');
+  const loadingEl = appendAIMsg('Thinking...', 'bot loading');
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:`You are Cookzo AI, a helpful assistant for a kitchen sharing marketplace in Chennai, India. Cookzo connects food entrepreneurs with idle professional and home kitchens. Help users find kitchens, understand pricing (typically ₹150–₹600/hr), explain the bidding system, give business advice for food startups, and answer questions about the platform. Be concise, warm, and helpful. Use ₹ for prices. Mention relevant Chennai areas like Anna Nagar, T. Nagar, Velachery, OMR, Adyar, Egmore.`,
+        messages:[{ role:'user', content: msg }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.map(c => c.text || '').join('') || 'Sorry, I could not get a response.';
+    loadingEl.textContent = text;
+    loadingEl.className = 'ai-msg bot';
+  } catch(e) {
+    loadingEl.textContent = 'Connection error. Please try again.';
+    loadingEl.className = 'ai-msg bot';
+  }
+}
+
+function appendAIMsg(text, cls) {
+  const msgs = document.getElementById('aiMessages');
+  const el = document.createElement('div');
+  el.className = `ai-msg ${cls}`;
+  el.textContent = text;
+  msgs.appendChild(el);
+  msgs.scrollTop = msgs.scrollHeight;
+  return el;
+}
+
+async function sendAI2() {
+  const input = document.getElementById('aiInput2');
+  const msg = input.value.trim();
+  if(!msg) return;
+  input.value = '';
+  const msgs = document.getElementById('aiMessages2');
+
+  const addMsg = (text, cls) => {
+    const el = document.createElement('div');
+    el.className = `ai-msg ${cls}`;
+    el.textContent = text;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+    return el;
+  };
+
+  addMsg(msg, 'user');
+  const loader = addMsg('Thinking...', 'bot loading');
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system:`You are Cookzo AI, a helpful assistant for a kitchen sharing marketplace in Chennai, India. Cookzo connects food entrepreneurs with idle professional and home kitchens. Help users find kitchens, understand pricing (typically ₹150–₹600/hr), explain the bidding system, give business advice for food startups, and answer questions about the platform. Be concise, warm, and helpful. Use ₹ for prices. Mention relevant Chennai areas like Anna Nagar, T. Nagar, Velachery, OMR, Adyar, Egmore when relevant.`,
+        messages:[{ role:'user', content: msg }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content?.map(c => c.text || '').join('') || 'Sorry, I could not get a response.';
+    loader.textContent = text;
+    loader.className = 'ai-msg bot';
+  } catch(e) {
+    loader.textContent = 'Connection error. Please try again.';
+    loader.className = 'ai-msg bot';
+  }
+}
+
+// ── CLOSE ON OVERLAY CLICK ──
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
