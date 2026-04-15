@@ -1,0 +1,2359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CookZo – Home Kitchen Delivery</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --teal:#ff6900;
+  --teal2:#ff9855;
+  --bg:#080504;
+  --bg1:#130e0a;
+  --bg2:#1a1410;
+  --bg3:#24190f;
+  --bg4:#2f2316;
+  --border:rgba(255,105,0,0.16);
+  --text:#f8f4ef;
+  --text2:#d8c9bf;
+  --red:#ff4444;
+  --yellow:#ffd700;
+  --orange:#ff8c00;
+  --radius:14px;
+  --shadow:0 12px 40px rgba(255,105,0,0.15);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+h1,h2,h3,.logo-text{font-family:'Syne',sans-serif;}
+
+/* ======== SCROLLBAR ======== */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:#111;}
+::-webkit-scrollbar-thumb{background:rgba(255,105,0,0.27);border-radius:2px;}
+
+/* ======== PAGE SYSTEM ======== */
+.page{display:none;min-height:100vh;}
+.page.active{display:block;}
+
+/* ======== PARTICLE BG ======== */
+#particles{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
+.particle{position:absolute;border-radius:50%;background:var(--teal);opacity:0;animation:float linear infinite;}
+@keyframes float{0%{transform:translateY(100vh) scale(0);opacity:0;}10%{opacity:0.3;}90%{opacity:0.1;}100%{transform:translateY(-10vh) scale(1);opacity:0;}}
+
+/* ======== AUTH PAGES ======== */
+.auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;padding:20px;}
+.page#signupPage .auth-wrap{display:grid;grid-template-columns:1.15fr 0.85fr;align-items:center;gap:40px;padding:60px 80px;}
+.page#signupPage .auth-card{max-width:520px;margin:0;}
+.auth-card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:40px 36px;
+  width:100%;
+  max-width:440px;
+  box-shadow:0 0 60px rgba(255,105,0,0.08);
+  animation:slideUp 0.5s ease;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+.auth-logo{text-align:center;margin-bottom:28px;}
+.auth-logo .logo-icon{font-size:44px;display:block;margin-bottom:8px;}
+.auth-logo h1{font-size:28px;color:var(--teal);letter-spacing:-0.5px;}
+.auth-logo p{color:var(--text2);font-size:13px;}
+.tab-row{display:flex;background:var(--bg3);border-radius:10px;padding:4px;margin-bottom:24px;}
+.tab-btn{flex:1;padding:10px;border:none;background:transparent;color:var(--text2);border-radius:8px;cursor:pointer;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;transition:all 0.3s;}
+.tab-btn.active{background:var(--teal);color:#000;}
+.role-toggle{display:flex;gap:10px;margin-bottom:20px;}
+.site-header{display:flex;align-items:center;justify-content:space-between;padding:20px 40px;background:rgba(12,10,8,0.96);border-bottom:1px solid rgba(255,105,0,0.18);position:sticky;top:0;z-index:1000;backdrop-filter:blur(18px);}
+.site-brand{display:flex;align-items:center;gap:10px;font-family:'Syne',sans-serif;font-size:24px;font-weight:800;color:var(--teal);}
+.site-brand span:first-child{font-size:26px;}
+.site-links{display:flex;gap:28px;align-items:center;}
+.site-links a{color:var(--text2);text-decoration:none;font-size:13px;font-weight:600;transition:color 0.25s;}
+.site-links a:hover{color:var(--teal);}
+.site-actions{display:flex;align-items:center;gap:12px;}
+.auth-hero{max-width:700px;display:flex;flex-direction:column;justify-content:center;gap:16px;}
+.auth-hero .status-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1px solid rgba(255,105,0,0.18);border-radius:999px;color:var(--text2);font-size:13px;margin-bottom:22px;}
+.auth-hero .status-chip span{width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block;}
+.auth-hero h1{font-size:clamp(48px,6vw,84px);line-height:1.02;margin-bottom:18px;color:#fff;}
+.auth-hero p{font-size:16px;color:var(--text2);line-height:1.85;max-width:660px;}
+.hero-actions{display:flex;flex-wrap:wrap;gap:16px;margin-top:32px;}
+.hero-actions .btn-outline,
+.hero-actions .btn-primary{width:auto;}
+.role-btn{flex:1;padding:12px;border:2px solid var(--border);background:transparent;color:var(--text2);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:6px;}
+.role-btn.active{border-color:var(--teal);color:var(--teal);background:rgba(255,105,0,0.06);}
+.owner-type-row{display:flex;gap:10px;margin-bottom:18px;}
+.type-btn{flex:1;padding:12px;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;transition:all 0.3s;}
+.type-btn.active{background:var(--teal);color:#000;border-color:var(--teal);}
+.inp-group{margin-bottom:14px;position:relative;}
+.inp-group label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500;}
+.inp-group input,.inp-group select,.inp-group textarea{
+  width:100%;padding:12px 16px;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);font-size:14px;
+  transition:border-color 0.3s;font-family:'DM Sans',sans-serif;
+}
+.inp-group input:focus,.inp-group select:focus,.inp-group textarea:focus{outline:none;border-color:var(--teal);}
+.inp-group textarea{resize:vertical;min-height:80px;}
+.inp-group select option{background:#111;}
+.inp-icon{position:absolute;right:14px;top:38px;color:var(--text2);}
+.btn-primary{
+  width:100%;padding:14px;
+  background:var(--teal);border:none;border-radius:10px;
+  color:#000;font-weight:700;font-size:15px;cursor:pointer;
+  font-family:'Syne',sans-serif;transition:all 0.3s;
+  position:relative;overflow:hidden;
+}
+.btn-primary::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0.2);transform:scaleX(0);transform-origin:left;transition:transform 0.3s;}
+.btn-primary:hover::after{transform:scaleX(1);}
+.btn-primary:hover{background:var(--teal2);}
+.btn-outline{
+  width:100%;padding:12px;
+  background:transparent;border:1px solid var(--border);
+  border-radius:10px;color:var(--text2);font-size:14px;cursor:pointer;
+  transition:all 0.3s;margin-top:10px;
+}
+.btn-outline:hover{border-color:var(--teal);color:var(--teal);}
+
+@media (max-width:1100px){
+  .page#signupPage .auth-wrap{grid-template-columns:1fr;gap:28px;padding:40px 24px;}
+  .page#signupPage .auth-card{margin:0 auto;max-width:540px;}
+  .site-header{flex-wrap:wrap;gap:16px;justify-content:center;}
+  .site-links{flex-wrap:wrap;justify-content:center;gap:16px;}
+  .site-actions{justify-content:center;flex-wrap:wrap;}
+}
+@media (max-width:720px){
+  .site-header{padding:18px 20px;}
+  .site-links{gap:10px;}
+  .site-actions{width:100%;justify-content:space-between;}
+  .site-links a{font-size:12px;}
+}
+
+.divider{text-align:center;color:var(--text2);font-size:12px;margin:16px 0;position:relative;}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border);}
+.divider::before{left:0;}
+.divider::after{right:0;}
+.upload-zone{
+  border:2px dashed var(--border);border-radius:10px;
+  padding:24px;text-align:center;cursor:pointer;
+  transition:border-color 0.3s;background:var(--bg3);
+  position:relative;overflow:hidden;
+}
+.upload-zone:hover{border-color:var(--teal);}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-zone i{font-size:28px;color:var(--teal);margin-bottom:8px;}
+.upload-zone p{font-size:12px;color:var(--text2);}
+.upload-zone .preview-img{max-width:100%;max-height:120px;border-radius:8px;margin-top:8px;}
+.fssai-badge{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(255,105,0,0.06);border:1px solid rgba(255,105,0,0.2);
+  border-radius:10px;padding:12px;margin-bottom:14px;
+}
+.fssai-badge i{color:var(--teal);font-size:20px;}
+.fssai-badge span{font-size:12px;color:var(--text2);}
+.fssai-badge strong{display:block;color:var(--teal);font-size:13px;}
+
+/* ======== CONTRACT PAGE ======== */
+.contract-wrap{max-height:60vh;overflow-y:auto;background:var(--bg3);border-radius:10px;padding:20px;margin-bottom:20px;font-size:13px;line-height:1.8;color:var(--text2);}
+.contract-wrap h3{color:var(--teal);margin:16px 0 8px;font-family:'Syne',sans-serif;}
+.contract-wrap p{margin-bottom:10px;}
+.contract-wrap ol{padding-left:20px;}
+.contract-wrap ol li{margin-bottom:6px;}
+.accept-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;background:var(--bg3);padding:14px;border-radius:10px;}
+.accept-row input[type=checkbox]{width:18px;height:18px;accent-color:var(--teal);}
+.accept-row label{font-size:13px;color:var(--text2);}
+
+/* ======== MAIN APP ======== */
+#appPage{display:none;flex-direction:column;}
+#appPage.active{display:flex;}
+
+/* NAV */
+.navbar{
+  height:58px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;background:rgba(10,10,10,0.95);
+  backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:1000;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;}
+.nav-logo span{font-family:'Syne',sans-serif;font-size:20px;color:var(--teal);font-weight:800;}
+.nav-right{display:flex;align-items:center;gap:12px;}
+.role-pill{padding:10px 14px;border:1px solid var(--border);border-radius:999px;background:var(--bg3);color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;transition:all 0.3s;}
+.role-pill:hover{border-color:var(--teal);color:var(--teal);}
+.nav-icon-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:var(--bg3);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;transition:all 0.3s;
+  color:var(--text2);
+}
+.nav-icon-btn:hover{border-color:var(--teal);color:var(--teal);}
+.notif-dot{
+  position:absolute;top:4px;right:4px;
+  width:8px;height:8px;border-radius:50%;background:var(--red);
+  border:2px solid var(--bg2);
+}
+.avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#000;font-size:14px;cursor:pointer;
+}
+
+/* BOTTOM NAV (mobile) */
+.bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(10,10,10,0.95);border-top:1px solid var(--border);
+  backdrop-filter:blur(20px);z-index:999;
+  padding:8px 0 env(safe-area-inset-bottom);
+}
+@media(max-width:768px){.bottom-nav{display:flex;}.nav-tabs{display:none!important;}}
+.bottom-nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  gap:4px;padding:6px;cursor:pointer;color:var(--text2);
+  transition:color 0.3s;font-size:10px;
+}
+.bottom-nav-item.active{color:var(--teal);}
+.bottom-nav-item i{font-size:18px;}
+
+/* TABS */
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{
+  padding:8px 16px;border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--text2);
+  transition:all 0.3s;border:none;background:transparent;
+}
+.nav-tab.active{background:var(--bg3);color:var(--teal);}
+.nav-tab:hover:not(.active){color:var(--text);}
+
+/* MAIN CONTENT */
+.main-content{flex:1;overflow-y:auto;padding-bottom:80px;}
+
+/* ======== HOME / EXPLORE ======== */
+.hero-section{
+  background:linear-gradient(135deg,#120b07 0%,#1f130a 48%,#080504 100%);
+  padding:48px 20px 32px;text-align:center;position:relative;overflow:hidden;
+}
+.hero-section::before{
+  content:'';position:absolute;top:-60%;left:-40%;width:180%;height:220%;
+  background:radial-gradient(circle at 30% 20%,rgba(255,105,0,0.14) 0%,transparent 52%);
+}
+.hero-section .status-chip{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1px solid rgba(255,105,0,0.18);border-radius:999px;color:var(--text2);font-size:13px;margin-bottom:22px;}
+.hero-section .status-chip span{width:8px;height:8px;border-radius:50%;background:var(--teal);display:inline-block;}
+.hero-section h1{font-size:clamp(32px,5vw,58px);line-height:1.05;margin-bottom:18px;position:relative;}
+.hero-section h1 span{color:var(--teal);}
+.hero-section p{color:var(--text2);font-size:15px;max-width:680px;margin:0 auto 24px;position:relative;}
+.hero-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin-top:20px;}
+.hero-actions .btn-hero{min-width:180px;}
+.search-bar-hero{
+  display:flex;max-width:520px;margin:24px auto 0;position:relative;
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;}
+
+.search-bar-hero input{
+  flex:1;padding:14px 16px;background:transparent;border:none;
+  color:var(--text);font-size:14px;
+}
+.search-bar-hero input:focus{outline:none;}
+.search-bar-hero button{
+  padding:0 20px;background:var(--teal);border:none;
+  color:#000;cursor:pointer;font-size:16px;
+}
+
+/* FILTER CHIPS */
+.filter-row{display:flex;gap:8px;padding:16px 20px;overflow-x:auto;scrollbar-width:none;}
+.filter-row::-webkit-scrollbar{display:none;}
+.chip{
+  white-space:nowrap;padding:8px 16px;
+  border-radius:20px;border:1px solid var(--border);
+  background:var(--bg2);color:var(--text2);
+  font-size:12px;cursor:pointer;transition:all 0.3s;
+}
+.chip.active,.chip:hover{border-color:var(--teal);color:var(--teal);background:rgba(255,105,0,0.06);}
+
+/* GRID */
+.section-header{display:flex;align-items:center;justify-content:space-between;padding:0 20px 12px;}
+.section-header h2{font-size:18px;}
+.section-header a{color:var(--teal);font-size:13px;text-decoration:none;}
+.kitchens-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:0 20px 20px;}
+
+/* KITCHEN CARD */
+.kitchen-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;transition:all 0.3s;position:relative;
+}
+.kitchen-card:hover{border-color:rgba(255,105,0,0.3);transform:translateY(-3px);box-shadow:var(--shadow);}
+.kitchen-card-img{
+  height:180px;background:var(--bg3);position:relative;overflow:hidden;
+}
+.kitchen-card-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
+.kitchen-card:hover .kitchen-card-img img{transform:scale(1.05);}
+.kitchen-card-img .img-placeholder{
+  width:100%;height:100%;display:flex;align-items:center;
+  justify-content:center;font-size:48px;
+  background:linear-gradient(135deg,#0a1a14,#111);
+}
+.badge-fssai{
+  position:absolute;top:10px;left:10px;
+  background:rgba(255,105,0,0.9);color:#000;
+  font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;
+  display:flex;align-items:center;gap:4px;
+}
+.badge-tag{
+  position:absolute;top:10px;right:10px;
+  padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;
+}
+.tag-veg{background:rgba(0,200,100,0.9);color:#fff;}
+.tag-nonveg{background:rgba(255,68,68,0.9);color:#fff;}
+.kitchen-card-body{padding:16px;}
+.kitchen-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:4px;}
+.kitchen-sub{font-size:12px;color:var(--text2);margin-bottom:10px;}
+.kitchen-meta{display:flex;gap:12px;align-items:center;}
+.meta-item{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);}
+.meta-item i{font-size:11px;}
+.rating{color:var(--yellow);}
+.rating span{color:var(--text2);}
+.price-hourly{color:var(--teal);font-weight:600;}
+.kitchen-slots{font-size:11px;color:var(--text2);background:rgba(255,105,0,0.06);padding:8px;border-radius:6px;border-left:3px solid var(--teal);}
+
+/* ======== NOTIFICATIONS ======== */
+.notif-panel{
+  position:absolute;right:10px;top:58px;width:320px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  z-index:1001;overflow:hidden;display:none;
+}
+.notif-panel.open{display:block;animation:slideDown 0.3s ease;}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+.notif-header{padding:16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.notif-header h3{font-size:15px;}
+.notif-item{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;gap:12px;transition:background 0.2s;}
+.notif-item:hover{background:var(--bg3);}
+.notif-item.unread{background:rgba(255,105,0,0.03);}
+.notif-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.notif-icon.green{background:rgba(255,105,0,0.1);color:var(--teal);}
+.notif-icon.red{background:rgba(255,68,68,0.1);color:var(--red);}
+.notif-icon.yellow{background:rgba(255,215,0,0.1);color:var(--yellow);}
+.notif-content p{font-size:13px;margin-bottom:2px;}
+.notif-content span{font-size:11px;color:var(--text2);}
+
+/* ======== MAP VIEW ======== */
+.map-page{height:calc(100vh - 58px);display:flex;flex-direction:column;}
+.map-toolbar{
+  padding:12px 16px;background:var(--bg2);
+  border-bottom:1px solid var(--border);display:flex;gap:10px;
+}
+.map-toolbar input{
+  flex:1;padding:10px 14px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;
+}
+.map-toolbar input:focus{outline:none;border-color:var(--teal);}
+.map-toolbar button{
+  padding:10px 16px;background:var(--teal);border:none;
+  border-radius:8px;color:#000;font-weight:600;cursor:pointer;font-size:13px;
+}
+.map-container{flex:1;position:relative;}
+#mainMap{height:100%;width:100%;}
+.map-info-panel{
+  position:absolute;bottom:0;left:0;right:0;
+  background:var(--bg2);border-top:1px solid var(--border);
+  border-radius:20px 20px 0 0;padding:20px;
+  transform:translateY(100%);transition:transform 0.4s;z-index:500;
+}
+.map-info-panel.open{transform:translateY(0);}
+.map-info-panel .drag-handle{
+  width:40px;height:4px;background:var(--border);
+  border-radius:2px;margin:0 auto 16px;
+}
+.route-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+.route-stat{text-align:center;background:var(--bg3);border-radius:10px;padding:14px;}
+.route-stat .value{font-size:20px;font-weight:700;color:var(--teal);font-family:'Syne',sans-serif;}
+.route-stat .label{font-size:11px;color:var(--text2);margin-top:2px;}
+
+/* ======== DELIVERY SETTINGS ======== */
+.settings-bar{
+  display:flex;gap:10px;padding:12px 16px;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;
+}
+.settings-bar::-webkit-scrollbar{display:none;}
+.sel{
+  padding:8px 14px;background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;
+  white-space:nowrap;transition:border-color 0.3s;min-width:110px;
+}
+.sel:focus{outline:none;border-color:var(--teal);}
+
+/* ======== ORDER / SLOT MODAL ======== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);
+  backdrop-filter:blur(6px);z-index:2000;
+  display:none;align-items:flex-end;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+@media(min-width:600px){.modal-overlay{align-items:center;}}
+.modal-box{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:20px 20px 0 0;width:100%;max-width:520px;
+  max-height:90vh;overflow-y:auto;
+  animation:modalUp 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@media(min-width:600px){.modal-box{border-radius:20px;}}
+@keyframes modalUp{from{opacity:0;transform:translateY(60px);}to{opacity:1;transform:translateY(0);}}
+.modal-header{
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;background:var(--bg2);z-index:1;
+}
+.modal-header h3{font-size:18px;}
+.modal-close{
+  width:34px;height:34px;border-radius:50%;background:var(--bg3);
+  border:none;color:var(--text2);cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+}
+.modal-body{padding:24px;}
+.slot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+.slot{
+  padding:10px 6px;border:1px solid var(--border);border-radius:8px;
+  text-align:center;cursor:pointer;transition:all 0.3s;font-size:12px;
+}
+.slot:hover,.slot.selected{border-color:var(--teal);color:var(--teal);background:rgba(255,105,0,0.06);}
+.slot.unavailable{opacity:0.4;cursor:not-allowed;}
+.price-summary{background:var(--bg3);border-radius:12px;padding:16px;margin:16px 0;}
+.price-row{display:flex;justify-content:space-between;padding:6px 0;font-size:14px;}
+.price-row.total{border-top:1px solid var(--border);margin-top:8px;padding-top:12px;font-weight:700;font-size:16px;color:var(--teal);}
+
+/* UPI */
+.upi-section{background:var(--bg3);border-radius:12px;padding:16px;margin-top:16px;}
+.upi-options{display:flex;gap:10px;margin-top:12px;}
+.upi-opt{
+  flex:1;padding:14px 8px;border:1px solid var(--border);
+  border-radius:10px;text-align:center;cursor:pointer;transition:all 0.3s;
+  font-size:12px;color:var(--text2);
+}
+.upi-opt:hover,.upi-opt.selected{border-color:var(--teal);color:var(--teal);background:rgba(255,105,0,0.06);}
+.upi-opt i{display:block;font-size:22px;margin-bottom:6px;}
+.upi-id-input{display:none;margin-top:12px;}
+.upi-id-input.show{display:block;}
+
+/* CONFIRM ANIMATION */
+.confirm-screen{text-align:center;padding:40px 20px;}
+.confirm-anim{
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(255,105,0,0.1);border:2px solid var(--teal);
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;color:var(--teal);margin:0 auto 20px;
+  animation:pulse 1s ease infinite;
+}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.1);box-shadow:0 0 30px rgba(255,105,0,0.3);}}
+.confirm-screen h2{font-size:22px;margin-bottom:8px;}
+.confirm-screen p{color:var(--text2);font-size:14px;}
+.order-id{
+  background:var(--bg3);border-radius:8px;padding:10px 16px;
+  font-family:monospace;font-size:14px;color:var(--teal);
+  margin:16px auto;display:inline-block;
+}
+
+/* TRACKING */
+.tracking-steps{margin:20px 0;}
+.track-step{display:flex;gap:14px;padding:12px 0;position:relative;}
+.track-step:not(:last-child)::after{
+  content:'';position:absolute;left:17px;top:40px;
+  width:2px;height:calc(100% - 10px);background:var(--border);
+}
+.track-step.done::after{background:var(--teal);}
+.step-dot{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--bg3);border:2px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;flex-shrink:0;transition:all 0.3s;
+}
+.track-step.done .step-dot{background:rgba(255,105,0,0.1);border-color:var(--teal);color:var(--teal);}
+.track-step.active .step-dot{background:var(--teal);border-color:var(--teal);color:#000;animation:pulse 1s infinite;}
+.step-info h4{font-size:14px;margin-bottom:2px;}
+.step-info p{font-size:12px;color:var(--text2);}
+
+/* KITCHEN OWNER DASHBOARD */
+.kitchen-dash{padding:20px;}
+.dash-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:24px;}
+@media(min-width:600px){.dash-stats{grid-template-columns:repeat(4,1fr);}}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;}
+.stat-card .num{font-size:28px;font-weight:700;font-family:'Syne',sans-serif;color:var(--teal);}
+.stat-card .lbl{font-size:12px;color:var(--text2);}
+.orders-list{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.order-card{
+  background:rgba(255,105,0,0.05);border:1px solid rgba(255,105,0,0.14);
+  border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 24px 50px rgba(0,0,0,0.18);
+  animation:fadeInUp 0.35s ease both;
+}
+.order-card-head{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-start;margin-bottom:14px;}
+.order-card-title{font-size:18px;font-weight:700;letter-spacing:-0.02em;}
+.order-card-meta{font-size:13px;color:var(--text2);line-height:1.6;}
+.order-status{padding:10px 16px;border-radius:999px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:8px;}
+.status-new{background:rgba(255,105,0,0.12);color:var(--teal);}
+.status-done{background:rgba(100,200,100,0.12);color:#64c864;}
+.status-pending,.status-prep{background:rgba(255,165,0,0.14);color:var(--orange);}
+.status-cancel{background:rgba(255,68,68,0.12);color:var(--red);}
+.order-card-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:18px;}
+.order-id-box{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--text2);font-family:monospace;}
+.order-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.order-action-btn{flex:1;min-width:140px;padding:12px 16px;border-radius:12px;border:1px solid rgba(255,105,0,0.24);background:rgba(255,105,0,0.06);color:var(--teal);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.25s;}
+.order-action-btn:hover{background:rgba(255,105,0,0.12);}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+.kitchen-card-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+.kitchen-card-actions .order-action-btn{flex:1;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,105,0,0.18);background:rgba(255,105,0,0.06);color:var(--teal);font-size:13px;font-weight:700;cursor:pointer;transition:all 0.25s;}
+.kitchen-card-actions .order-action-btn:hover{background:rgba(255,105,0,0.14);}
+
+.wallet-coupons{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:20px;}
+.coupon-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:18px;display:flex;justify-content:space-between;align-items:center;gap:12px;box-shadow:0 20px 40px rgba(0,0,0,0.12);}
+.coupon-card.active{border-color:var(--teal);}
+.coupon-label{font-size:16px;font-weight:800;color:#fff;}
+.coupon-subtitle{font-size:12px;color:var(--text2);margin-top:6px;}
+
+.owner-panel-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;}
+.owner-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;padding:20px;box-shadow:0 18px 40px rgba(0,0,0,0.16);}
+.owner-full-card{grid-column:1/-1;}
+.owner-card-title{font-size:16px;font-weight:700;margin-bottom:14px;}
+
+.inquiry-card, .listing-card, .owner-history-card{background:var(--bg3);border:1px solid rgba(255,105,0,0.08);border-radius:14px;padding:16px;margin-bottom:12px;}
+.inquiry-name{font-weight:700;font-size:14px;}
+.inquiry-meta{font-size:12px;color:var(--text2);margin-top:4px;display:flex;align-items:center;gap:8px;}
+.inquiry-message{font-size:13px;color:var(--text2);margin:10px 0;}
+.inquiry-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.listing-card{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;}
+.listing-title{font-weight:700;font-size:14px;}
+.listing-meta{font-size:12px;color:var(--text2);margin-top:6px;}
+.owner-history-card{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+
+.chat-widget{position:fixed;right:20px;bottom:20px;width:320px;max-height:520px;background:rgba(12,10,8,0.98);border:1px solid rgba(255,105,0,0.2);border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,0.45);display:none;flex-direction:column;overflow:hidden;z-index:2000;}
+.chat-widget.open{display:flex;}
+.chat-header{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:rgba(255,105,0,0.08);border-bottom:1px solid rgba(255,105,0,0.12);font-weight:700;color:var(--text);}
+.chat-dot{width:10px;height:10px;border-radius:50%;background:var(--teal);display:inline-block;margin-right:8px;}
+.chat-body{padding:16px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;}
+.chat-input-row{display:flex;gap:10px;padding:16px;background:var(--bg3);border-top:1px solid rgba(255,105,0,0.12);}
+.chat-input-row input{flex:1;padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:var(--bg2);color:#fff;font-size:13px;}
+.chat-float{position:fixed;right:20px;bottom:20px;width:56px;height:56px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;color:#000;font-size:20px;cursor:pointer;box-shadow:0 20px 50px rgba(0,0,0,0.4);z-index:1999;}
+.chat-bubble{max-width:100%;padding:12px 14px;border-radius:18px;font-size:13px;line-height:1.5;}
+.chat-bubble.bot{background:rgba(255,105,0,0.08);color:var(--text2);align-self:flex-start;}
+.chat-bubble.user{background:rgba(255,255,255,0.08);color:#fff;align-self:flex-end;}
+
+.bidding-card{background:rgba(255,105,0,0.04);border:1px solid rgba(255,105,0,0.16);border-radius:18px;padding:22px;margin-bottom:18px;box-shadow:0 20px 45px rgba(0,0,0,0.16);animation:fadeInUp 0.35s ease both;}
+.bidding-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.bid-title{font-size:17px;font-weight:700;}
+.bid-meta{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--text2);}
+.bid-status{font-size:12px;color:var(--text2);}
+.bid-rate{font-size:26px;font-weight:800;color:var(--teal);}
+.bid-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.bid-highlight{background:rgba(255,105,0,0.1);border:1px solid rgba(255,105,0,0.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text);}
+.bid-input-row{display:grid;grid-template-columns:1fr auto;gap:10px;margin-top:16px;}
+.bid-input{padding:14px 16px;border-radius:14px;border:1px solid var(--border);background:var(--bg3);color:var(--text);font-size:13px;}
+.bid-input::placeholder{color:var(--text2);}
+.bid-action{padding:14px 22px;border:none;border-radius:14px;background:var(--teal);color:#000;cursor:pointer;font-weight:700;}
+.bid-action:hover{background:var(--teal2);}
+
+.swap-section{margin-top:32px;padding:20px;background:rgba(255,105,0,0.04);border:1px solid rgba(255,105,0,0.14);border-radius:20px;}
+.swap-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px;flex-wrap:wrap;}
+.swap-header h3{margin:0;font-size:18px;}
+.swap-header p{margin:0;color:var(--text2);font-size:13px;}
+.pulse-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;background:rgba(255,105,0,0.12);color:var(--teal);font-size:12px;font-weight:700;animation:pulse 1.8s infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.02);}}
+.swap-deck{min-height:260px;position:relative;}
+.swap-card{background:var(--bg2);border:1px solid var(--border);border-radius:22px;padding:24px;box-shadow:0 28px 60px rgba(0,0,0,0.25);position:absolute;top:0;left:0;right:0;transition:transform 0.35s ease,opacity 0.35s ease;}
+.swap-card.swipe-left{transform:translateX(-120%) rotate(-12deg);opacity:0;}
+.swap-card.swipe-right{transform:translateX(120%) rotate(12deg);opacity:0;}
+.swap-card-tag{display:inline-flex;padding:7px 12px;border-radius:999px;background:rgba(255,105,0,0.1);color:var(--teal);font-size:12px;font-weight:700;margin-bottom:16px;}
+.swap-card-title{font-size:20px;font-weight:800;margin-bottom:8px;}
+.swap-card-line{display:flex;align-items:center;gap:8px;color:var(--text2);font-size:13px;margin-bottom:8px;}
+.swap-card-line i{color:var(--teal);}
+.swap-card-detail{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px;}
+.swap-info{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:13px;color:var(--text2);}
+.swap-actions{display:flex;justify-content:center;gap:14px;margin-top:18px;}
+.swap-actions .btn-outline{min-width:140px;}
+.swap-actions .btn-primary{min-width:140px;}
+.post-slot-panel{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:22px;margin-bottom:24px;box-shadow:0 20px 48px rgba(0,0,0,0.18);}
+.post-slot-panel .panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+.post-slot-panel h3{margin:0;font-size:20px;}
+.post-slot-panel p{margin:4px 0 0;color:var(--text2);font-size:13px;}
+.post-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.post-footer{display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center;margin-top:18px;}
+.post-code{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:14px;min-width:220px;color:var(--text2);font-size:13px;}
+
+/* MENU MANAGEMENT */
+.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.menu-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:14px;position:relative;
+}
+.menu-card .menu-actions{position:absolute;top:10px;right:10px;display:flex;gap:6px;}
+.icon-btn{
+  width:28px;height:28px;border-radius:6px;background:var(--bg3);
+  border:1px solid var(--border);cursor:pointer;color:var(--text2);
+  display:flex;align-items:center;justify-content:center;font-size:12px;
+  transition:all 0.3s;
+}
+.icon-btn:hover{border-color:var(--teal);color:var(--teal);}
+.icon-btn.del:hover{border-color:var(--red);color:var(--red);}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--bg2);border:1px solid var(--teal);border-radius:10px;
+  padding:12px 20px;font-size:13px;z-index:9999;opacity:0;
+  transition:all 0.3s;pointer-events:none;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.error{border-color:var(--red);}
+
+/* PROFILE */
+.profile-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:24px;text-align:center;margin:20px;
+}
+.profile-avatar{
+  width:80px;height:80px;border-radius:50%;
+  background:linear-gradient(135deg,var(--teal),var(--teal2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;font-weight:700;color:#000;
+  margin:0 auto 16px;font-family:'Syne',sans-serif;
+}
+.profile-info h2{font-size:20px;margin-bottom:4px;}
+.profile-info p{color:var(--text2);font-size:13px;}
+.profile-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,105,0,0.1);border:1px solid rgba(255,105,0,0.2);
+  border-radius:20px;padding:4px 12px;font-size:12px;color:var(--teal);margin-top:8px;
+}
+.settings-list{margin:0 20px 20px;}
+.settings-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.3s;
+}
+.settings-item:hover{border-color:rgba(255,105,0,0.2);}
+.settings-item .left{display:flex;align-items:center;gap:12px;}
+.settings-item .left i{width:32px;height:32px;background:var(--bg3);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--teal);font-size:14px;}
+.settings-item h4{font-size:14px;}
+.settings-item p{font-size:12px;color:var(--text2);}
+
+/* KITCHEN UPLOAD */
+.upload-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px;}
+.upload-gallery-item{
+  aspect-ratio:1;border-radius:8px;overflow:hidden;
+  position:relative;background:var(--bg3);cursor:pointer;
+}
+.upload-gallery-item img{width:100%;height:100%;object-fit:cover;}
+.upload-gallery-item .add-btn{
+  width:100%;height:100%;display:flex;align-items:center;
+  justify-content:center;border:2px dashed var(--border);border-radius:8px;
+  color:var(--text2);font-size:24px;transition:all 0.3s;
+}
+.upload-gallery-item .add-btn:hover{border-color:var(--teal);color:var(--teal);}
+.upload-gallery-item input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+
+/* OVERLAPPING ANIMATION */
+.splash{
+  position:fixed;inset:0;background:#000;z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  animation:splashOut 0.5s ease 2s forwards;
+}
+@keyframes splashOut{to{opacity:0;pointer-events:none;}}
+.splash-inner{text-align:center;}
+.splash-logo{font-size:56px;display:block;animation:logoBounce 0.8s ease;}
+@keyframes logoBounce{0%{transform:scale(0.5);opacity:0;}60%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+.splash-title{font-family:'Syne',sans-serif;font-size:36px;color:var(--teal);
+  animation:fadeInUp 0.6s ease 0.3s both;}
+.splash-sub{font-size:14px;color:var(--text2);animation:fadeInUp 0.6s ease 0.5s both;}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.splash-loader{
+  width:200px;height:2px;background:var(--bg3);border-radius:2px;
+  margin:24px auto 0;overflow:hidden;
+}
+.splash-loader-bar{
+  height:100%;background:var(--teal);border-radius:2px;
+  animation:load 1.8s ease forwards;
+}
+@keyframes load{from{width:0;}to{width:100%;}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .kitchens-grid{grid-template-columns:1fr;}
+  .auth-card{padding:28px 20px;}
+  .map-toolbar{flex-wrap:wrap;}
+}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div class="splash" id="splash">
+  <div class="splash-inner">
+    <span class="splash-logo">🍲</span>
+    <div class="splash-title">CookZo</div>
+    <div class="splash-sub">Home Kitchens. Fresh Food. Fast Delivery.</div>
+    <div class="splash-loader"><div class="splash-loader-bar"></div></div>
+  </div>
+</div>
+
+<!-- PARTICLES -->
+<div id="particles"></div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notifPanel">
+  <div class="notif-header">
+    <h3>Notifications</h3>
+    <span style="font-size:12px;color:var(--teal);cursor:pointer;">Mark all read</span>
+  </div>
+  <div class="notif-item unread">
+    <div class="notif-icon green"><i class="fas fa-check"></i></div>
+    <div class="notif-content"><p>Your order #CZ1042 is confirmed!</p><span>2 min ago</span></div>
+  </div>
+  <div class="notif-item unread">
+    <div class="notif-icon yellow"><i class="fas fa-fire"></i></div>
+    <div class="notif-content"><p>Anitha's Kitchen accepted your order</p><span>5 min ago</span></div>
+  </div>
+  <div class="notif-item">
+    <div class="notif-icon red"><i class="fas fa-tag"></i></div>
+    <div class="notif-content"><p>New offer: 20% off on lunch orders!</p><span>1 hr ago</span></div>
+  </div>
+</div>
+
+<!-- ===================== SIGNUP PAGE ===================== -->
+<div class="page active" id="signupPage">
+  <header class="site-header">
+    <div class="site-brand"><span>🍲</span><span>Cookzo</span></div>
+    <div class="site-links">
+      <a href="#" onclick="switchTab('home')">Browse Kitchens</a>
+      <a href="#" onclick="switchTab('map')">Live Bids</a>
+      <a href="#" onclick="switchTab('dashboard')">Dashboard</a>
+      <a href="#" onclick="switchTab('orders')">Wallet</a>
+      <a href="#" onclick="switchTab('profile')">Leaderboard</a>
+    </div>
+    <div class="site-actions">
+      <div class="role-pill" id="appModeBtn" onclick="toggleAppMode()">Kitchen Seeker</div>
+      <button class="btn-outline" onclick="switchAuthTab('login')">Login</button>
+      <button class="btn-primary" onclick="switchAuthTab('signup')">Sign Up</button>
+    </div>
+  </header>
+  <div class="auth-wrap">
+    <div class="auth-hero">
+      <div class="status-chip"><span></span>Chennai's #1 Kitchen Sharing Platform</div>
+      <h1>Rent a Kitchen,<br>Launch Your Brand</h1>
+      <p>Connect with idle professional restaurant kitchens or home kitchens. Start your food business today — no setup cost, zero hassle.</p>
+    </div>
+    <div class="auth-card auth-card--wide">
+      <div class="auth-logo">
+        <span class="logo-icon">🍲</span>
+        <h1>CookZo</h1>
+        <p>Home Kitchens. Fresh Food. Fast Delivery.</p>
+      </div>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchAuthTab('signup')">Sign Up</button>
+        <button class="tab-btn" onclick="switchAuthTab('login')">Login</button>
+      </div>
+
+      <!-- ROLE SELECT -->
+      <div id="signupForm">
+        <div class="role-toggle">
+          <button class="role-btn active" id="roleCustomer" onclick="setRole('customer')"><i class="fas fa-user"></i> Customer</button>
+          <button class="role-btn" id="roleKitchen" onclick="setRole('kitchen')"><i class="fas fa-store"></i> Kitchen Owner</button>
+        </div>
+
+        <div class="inp-group">
+          <label>Full Name</label>
+          <input id="signupName" placeholder="Your full name" type="text">
+        </div>
+        <div class="inp-group">
+          <label>Phone Number</label>
+          <input id="signupPhone" placeholder="+91 XXXXX XXXXX" type="tel">
+        </div>
+        <div class="inp-group">
+          <label>Email Address</label>
+          <input id="signupEmail" placeholder="you@email.com" type="email">
+        </div>
+        <div class="inp-group">
+          <label>Password</label>
+          <input id="signupPass" placeholder="Minimum 8 characters" type="password">
+        </div>
+
+        <!-- KITCHEN OWNER FIELDS -->
+        <div id="kitchenFields" style="display:none;">
+          <div class="fssai-badge">
+            <i class="fas fa-certificate"></i>
+            <div><strong>FSSAI License Required</strong><span>Food Safety and Standards Authority of India</span></div>
+          </div>
+          <div class="inp-group">
+            <label>FSSAI License Number (14 digits)</label>
+            <input id="fssaiNum" placeholder="e.g. 10012345678901" maxlength="14">
+          </div>
+          <div class="inp-group">
+            <label>FSSAI License Certificate</label>
+            <div class="upload-zone">
+              <input type="file" accept=".pdf,.jpg,.png" onchange="previewFile(this,'fssaiPreview')">
+              <i class="fas fa-file-certificate"></i>
+              <p>Upload FSSAI License (PDF/Image)</p>
+              <img id="fssaiPreview" class="preview-img" style="display:none;">
+            </div>
+          </div>
+          <div class="inp-group">
+            <label>Kitchen / Restaurant Name</label>
+            <input id="kitchenName" placeholder="e.g. Anitha's Home Kitchen">
+          </div>
+              <div class="inp-group">
+            <label>Kitchen Address</label>
+            <textarea id="kitchenAddress" placeholder="Full address with pincode"></textarea>
+          </div>
+          <div class="owner-type-row">
+            <button class="type-btn active" id="typePro" onclick="setOwnerType('professional')">Professional Kitchen</button>
+            <button class="type-btn" id="typeNonPro" onclick="setOwnerType('non-professional')">Non-Professional Kitchen</button>
+          </div>
+          <div class="inp-group">
+            <label>Kitchen Phone Number</label>
+            <input id="kitchenPhone" placeholder="+91 XXXXX XXXXX" type="tel">
+          </div>
+          <div class="inp-group">
+            <label>Kitchen Photos</label>
+            <div class="upload-zone">
+              <input type="file" accept="image/*" multiple onchange="previewKitchenPhotos(this)">
+              <i class="fas fa-camera"></i>
+              <p>Upload Kitchen / Food Photos (Multiple)</p>
+            </div>
+            <div class="upload-gallery" id="kitchenGallery"></div>
+          </div>
+          <div class="inp-group">
+            <label>Food Type</label>
+            <select id="foodType">
+              <option value="veg">Vegetarian Only</option>
+              <option value="nonveg">Non-Vegetarian</option>
+              <option value="both">Both Veg & Non-Veg</option>
+            </select>
+          </div>
+          <div class="inp-group">
+            <label>Cuisine Speciality</label>
+            <input id="cuisine" placeholder="e.g. South Indian, Chettinad, etc.">
+          </div>
+          <div style="background:rgba(255,105,0,0.08);border:1px solid rgba(255,105,0,0.16);border-radius:10px;padding:14px;margin-bottom:16px;">
+            <h4 style="margin-bottom:12px;color:var(--teal);">💰 Set Your Pricing (per hour)</h4>
+            <div class="inp-group" style="margin-bottom:10px;">
+              <label>First Hour Rate (₹)</label>
+              <input id="hourlyPrice" placeholder="e.g. 300" type="number" value="300">
+            </div>
+            <div class="inp-group">
+              <label>Extra Hours Rate (₹)</label>
+              <input id="extraHourly" placeholder="e.g. 200" type="number" value="200">
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="proceedToContract()" style="margin-top:8px;">
+          Continue <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div id="loginForm" style="display:none;">
+        <div class="role-toggle">
+          <button class="role-btn active" id="loginRoleCustomer" onclick="setLoginRole('customer')"><i class="fas fa-user"></i> Customer</button>
+          <button class="role-btn" id="loginRoleKitchen" onclick="setLoginRole('kitchen')"><i class="fas fa-store"></i> Kitchen Owner</button>
+        </div>
+        <div class="inp-group">
+          <label>Email / Phone</label>
+          <input id="loginEmail" placeholder="Email or phone number">
+        </div>
+        <div class="inp-group">
+          <label>Password</label>
+          <input id="loginPass" placeholder="Your password" type="password">
+        </div>
+        <button class="btn-primary" onclick="doLogin()" style="margin-top:8px;">Login <i class="fas fa-sign-in-alt"></i></button>
+        <button class="btn-outline" onclick="switchAuthTab('signup')">Don't have an account? Sign up</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== CONTRACT PAGE ===================== -->
+<div class="page" id="contractPage">
+  <header class="site-header">
+    <div class="site-brand"><span>🍲</span><span>Cookzo</span></div>
+    <div class="site-links">
+      <a href="#" onclick="switchTab('home')">Browse Kitchens</a>
+      <a href="#" onclick="switchTab('map')">Live Bids</a>
+      <a href="#" onclick="switchTab('dashboard')">Dashboard</a>
+      <a href="#" onclick="switchTab('orders')">Wallet</a>
+      <a href="#" onclick="switchTab('profile')">Leaderboard</a>
+    </div>
+    <div class="site-actions">
+      <div class="role-pill" id="appModeBtnContract" onclick="toggleAppMode()">Kitchen Seeker</div>
+      <button class="btn-outline" onclick="switchPageFromContract()">Back</button>
+      <button class="btn-primary" onclick="showPage('signupPage')">Sign Up</button>
+    </div>
+  </header>
+  <div class="auth-wrap">
+    <div class="auth-card" style="max-width:560px;">
+      <div class="auth-logo">
+        <span class="logo-icon">📜</span>
+        <h1>Terms & Conditions</h1>
+        <p>Please read and accept to continue</p>
+      </div>
+      <div class="contract-wrap">
+        <h3>1. General Terms</h3>
+        <p>By signing up on CookZo, you agree to abide by all platform policies. CookZo connects home kitchen owners ("Partners") with customers for food delivery services.</p>
+        <h3>2. For Kitchen Partners</h3>
+        <ol>
+          <li>You must possess a valid FSSAI license and keep it current. CookZo reserves the right to verify and suspend accounts with invalid licenses.</li>
+          <li>All food must be prepared in hygienic conditions meeting FSSAI standards.</li>
+          <li>You are solely responsible for the quality, safety, and accuracy of food orders.</li>
+          <li>CookZo collects a platform fee of 15% per order. Payouts are processed weekly.</li>
+          <li>You must not misrepresent ingredients, allergens, or preparation methods.</li>
+        </ol>
+        <h3>3. For Customers</h3>
+        <ol>
+          <li>Orders once placed and confirmed cannot be cancelled after preparation begins.</li>
+          <li>Delivery slots are subject to availability and partner confirmation.</li>
+          <li>CookZo is a facilitator and not liable for food quality — disputes must be raised within 2 hours of delivery.</li>
+          <li>Misuse of the refund/dispute system may result in account suspension.</li>
+        </ol>
+        <h3>4. Privacy & Data</h3>
+        <p>CookZo collects personal data including name, phone, address and payment information solely to facilitate orders. Data is never sold to third parties. See our full Privacy Policy at cookzo.in/privacy.</p>
+        <h3>5. Prohibited Activities</h3>
+        <p>Fake orders, fraudulent reviews, impersonation, and abuse of partners or staff are strictly prohibited and will result in permanent account termination and potential legal action.</p>
+        <h3>6. Governing Law</h3>
+        <p>These terms are governed by the laws of India. Any disputes shall be subject to the jurisdiction of courts in Chennai, Tamil Nadu.</p>
+        <p style="margin-top:16px;font-style:italic;color:var(--teal);">By accepting, you confirm that you have read, understood, and agree to all terms above. ✍️</p>
+      </div>
+      <div class="accept-row">
+        <input type="checkbox" id="termsCheck" onchange="toggleAccept()">
+        <label for="termsCheck">I have read and accept all Terms & Conditions, Privacy Policy, and Platform Policies of CookZo.</label>
+      </div>
+      <button class="btn-primary" id="acceptBtn" disabled onclick="completeSignup()" style="opacity:0.5;">
+        <i class="fas fa-signature"></i> Accept & Create Account
+      </button>
+      <button class="btn-outline" onclick="showPage('signupPage')">← Back</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div class="page" id="appPage">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="nav-logo">
+      <span>🍲</span>
+      <span>CookZo</span>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('home')">Home</button>
+      <button class="nav-tab" onclick="switchTab('map')">Map</button>
+      <button class="nav-tab" onclick="switchTab('orders')">My Orders</button>
+      <button class="nav-tab" onclick="switchTab('wallet')">Wallet</button>
+      <button class="nav-tab" onclick="switchTab('bids')">Live Bids</button>
+      <button class="nav-tab" onclick="switchTab('leaderboard')">Leaderboard</button>
+      <button class="nav-tab" id="dashTabBtn" onclick="switchTab('dashboard')" style="display:none;">Dashboard</button>
+      <button class="nav-tab" onclick="switchTab('profile')">Profile</button>
+    </div>
+    <div class="nav-right">
+      <div class="role-pill" id="appModeBtn" onclick="toggleAppMode()"><i class="fas fa-exchange-alt"></i> Kitchen Seeker</div>
+      <div class="nav-icon-btn" onclick="toggleNotif()">
+        <i class="fas fa-bell"></i>
+        <div class="notif-dot"></div>
+      </div>
+      <div class="avatar" onclick="switchTab('profile')">A</div>
+    </div>
+  </nav>
+
+  <!-- HOME TAB -->
+  <div class="tab-content active" id="tab-home">
+    <div class="hero-section">
+      <div class="status-chip"><span></span>Chennai's #1 Kitchen Sharing Platform</div>
+      <h1>Rent a <span>Kitchen</span>,<br>Launch Your <span>Brand</span></h1>
+      <p>Connect with idle professional restaurant kitchens or home kitchens. Start your food business today — no setup cost, zero hassle.</p>
+      <div class="search-bar-hero">
+        <input id="heroSearch" placeholder="Search kitchens, locations..." oninput="filterKitchens(this.value)">
+        <button><i class="fas fa-search"></i></button>
+      </div>
+      <div class="hero-actions">
+        <button class="btn-primary btn-hero" onclick="switchTab('map')"><i class="fas fa-search"></i> Need a Kitchen</button>
+        <button class="btn-outline btn-hero" onclick="enterOwnerPost()">List My Kitchen</button>
+      </div>
+    </div>
+
+    <div class="filter-row">
+      <div class="chip active" onclick="filterByTag('all',this)">🍽️ All</div>
+      <div class="chip" onclick="filterByTag('veg',this)">🥦 Vegetarian</div>
+      <div class="chip" onclick="filterByTag('south',this)">🌶️ South Indian</div>
+      <div class="chip" onclick="filterByTag('north',this)">🫓 North Indian</div>
+      <div class="chip" onclick="filterByTag('biryani',this)">🍛 Biryani</div>
+      <div class="chip" onclick="filterByTag('tiffin',this)">🫙 Tiffin</div>
+      <div class="chip" onclick="filterByTag('dessert',this)">🍮 Desserts</div>
+    </div>
+
+    <div class="section-header">
+      <h2>🔥 Popular Kitchens</h2>
+      <a href="#" onclick="switchTab('map')">View on Map →</a>
+    </div>
+    <div class="kitchens-grid" id="kitchensGrid"></div>
+  </div>
+
+  <!-- MAP TAB -->
+  <div class="tab-content" id="tab-map" style="display:none;">
+    <div class="map-page">
+      <div class="map-toolbar">
+        <input id="mapSearch" placeholder="Search kitchens or cuisine" onkeydown="if(event.key==='Enter') searchMapKitchen();">
+        <input id="mapFrom" placeholder="📍 From location (click map or type)">
+        <input id="mapTo" placeholder="🏠 Destination kitchen or select from map">
+        <button onclick="searchMapKitchen()">Find Kitchen</button>
+        <button onclick="calcRoute()">Route</button>
+      </div>
+      <div class="settings-bar">
+        <select class="sel" id="mapMode">
+          <option value="eco">🌿 Eco</option>
+          <option value="fast">⚡ Fast</option>
+          <option value="turbo">🚀 Turbo</option>
+        </select>
+        <select class="sel" id="mapClimate">
+          <option value="clear">☀️ Clear</option>
+          <option value="rain">🌧️ Rain</option>
+          <option value="storm">⛈️ Storm</option>
+        </select>
+        <select class="sel" id="mapDelivery">
+          <option value="normal">📦 Normal</option>
+          <option value="priority">⭐ Priority</option>
+          <option value="express">🔥 Express</option>
+        </select>
+        <button style="padding:8px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:12px;" onclick="resetMap()">Reset</button>
+      </div>
+      <div class="map-container">
+        <div id="mainMap"></div>
+        <div class="map-info-panel" id="mapInfoPanel">
+          <div class="drag-handle"></div>
+          <h3 id="mapPanelTitle">Route Optimized ✅</h3>
+          <p id="mapAiText" style="font-size:13px;color:var(--text2);margin-top:4px;"></p>
+          <div class="route-stats">
+            <div class="route-stat"><div class="value" id="statDist">—</div><div class="label">Distance</div></div>
+            <div class="route-stat"><div class="value" id="statEta">—</div><div class="label">ETA</div></div>
+            <div class="route-stat"><div class="value" id="statEco">—</div><div class="label">Eco Score</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORDERS TAB -->
+  <div class="tab-content" id="tab-orders" style="display:none;">
+    <div style="padding:20px;">
+      <h2 style="margin-bottom:16px;">My Orders</h2>
+      <div id="ordersList"></div>
+    </div>
+  </div>
+
+  <!-- KITCHEN DASHBOARD TAB -->
+  <div class="tab-content" id="tab-dashboard" style="display:none;">
+    <div class="kitchen-dash">
+      <div style="margin-bottom:20px;">
+        <h2>Kitchen Dashboard</h2>
+        <p style="color:var(--text2);font-size:13px;">Manage your orders and menu</p>
+      </div>
+      <div class="dash-stats">
+        <div class="stat-card"><div class="num">24</div><div class="lbl">Orders Today</div></div>
+        <div class="stat-card"><div class="num" style="color:var(--yellow);">₹3,840</div><div class="lbl">Today's Revenue</div></div>
+        <div class="stat-card"><div class="num" style="color:var(--orange);">4.8⭐</div><div class="lbl">Rating</div></div>
+        <div class="stat-card"><div class="num" style="color:#64c864;">98%</div><div class="lbl">On-time Rate</div></div>
+      </div>
+      <canvas id="revenueChart" style="max-width:100%;height:200px;margin:20px 0;border-radius:12px;"></canvas>
+      <div class="post-slot-panel">
+        <div class="panel-head">
+          <div>
+            <h3>Post Kitchen Availability</h3>
+            <p>Professional and non-professional kitchen owners can publish time-based slots.</p>
+          </div>
+          <span class="status-chip"><span></span>Owner Posting</span>
+        </div>
+        <div class="post-grid">
+          <div class="inp-group">
+            <label>Kitchen Name</label>
+            <input id="postKitchenName" placeholder="e.g. Anitha's Kitchen">
+          </div>
+          <div class="inp-group">
+            <label>Location</label>
+            <input id="postKitchenLocation" placeholder="e.g. Anna Nagar, Chennai">
+          </div>
+          <div class="inp-group">
+            <label>Kitchen Type</label>
+            <select id="postType">
+              <option value="Professional">Professional</option>
+              <option value="Non-Professional">Non-Professional</option>
+            </select>
+          </div>
+          <div class="inp-group">
+            <label>Slot Time</label>
+            <select id="postSlot">
+              <option>10:00–11:00</option>
+              <option>11:00–12:00</option>
+              <option>12:00–13:00</option>
+              <option>13:00–14:00</option>
+              <option>14:00–15:00</option>
+              <option>15:00–16:00</option>
+              <option>16:00–17:00</option>
+            </select>
+          </div>
+          <div class="inp-group">
+            <label>Hourly Rate (₹)</label>
+            <input id="postHourly" type="number" placeholder="300">
+          </div>
+          <div class="inp-group">
+            <label>Extra Hour Rate (₹)</label>
+            <input id="postExtra" type="number" placeholder="200">
+          </div>
+        </div>
+        <div class="post-footer">
+          <button class="btn-primary" style="width:auto;padding:12px 20px;" onclick="createSlotListing()">Generate Listing Code</button>
+          <div id="listingCodeBox" class="post-code">No listing generated yet.</div>
+        </div>
+      </div>
+      <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+        <h3>Live Orders</h3>
+        <span style="font-size:12px;color:var(--teal);">Auto-refresh 30s</span>
+      </div>
+      <div class="orders-list" id="dashOrdersList"></div>
+      <div style="margin:24px 0 16px;display:flex;justify-content:space-between;align-items:center;">
+        <h3>Menu Items</h3>
+        <button class="btn-primary" style="width:auto;padding:8px 16px;font-size:13px;" onclick="openAddMenu()">+ Add Item</button>
+      </div>
+      <div class="menu-grid" id="menuGrid"></div>
+      <div class="owner-panel-row">
+        <div class="owner-card">
+          <div class="owner-card-title">Recent Inquiries</div>
+          <div id="ownerInboxList"></div>
+        </div>
+        <div class="owner-card">
+          <div class="owner-card-title">Your Posted Listings</div>
+          <div id="postedListingsList"></div>
+        </div>
+      </div>
+      <div class="owner-card owner-full-card" style="margin-top:20px;">
+        <div class="owner-card-title">Previous Owner Matches</div>
+        <div id="previousOwnersList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE TAB -->
+  <div class="tab-content" id="tab-wallet" style="display:none;">
+    <div style="padding:20px;">
+      <h2 style="margin-bottom:20px;">💰 Wallet & Credits</h2>
+      <div style="background:linear-gradient(135deg,var(--teal),var(--teal2));border-radius:16px;padding:32px 20px;text-align:center;color:#000;margin-bottom:24px;">
+        <div style="font-size:14px;opacity:0.9;margin-bottom:8px;">Available Balance</div>
+        <div style="font-size:48px;font-weight:800;font-family:'Syne',sans-serif;margin-bottom:12px;">₹840</div>
+        <div style="font-size:13px;opacity:0.85;">+ 120 loyalty points · ₹60 credits</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px;">
+        <button class="btn-primary" style="padding:14px;font-size:13px;" onclick="showToast('Add money to wallet...');" ><i class="fas fa-plus"></i> Add Money</button>
+        <button style="padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--teal);font-weight:600;cursor:pointer;font-size:13px;" onclick="showToast('Viewing rewards...');" ><i class="fas fa-gift"></i> Rewards</button>
+      </div>
+      <h3 style="margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">Rewards & Coupons <span style="font-size:12px;color:var(--text2);">Redeem on next booking</span></h3>
+      <div class="wallet-coupons" id="couponList"></div>
+      <h3 style="margin:20px 0 16px;">Recent Transactions</h3>
+      <div id="walletTransactions"></div>
+    </div>
+  </div>
+
+  <!-- BIDDING TAB -->
+  <div class="tab-content" id="tab-bids" style="display:none;">
+    <div style="padding:20px;">
+      <h2 style="margin-bottom:8px;">🏪 Bid on Kitchen Slots</h2>
+      <p style="color:var(--text2);font-size:13px;margin-bottom:20px;">Restaurant owners post available slots — place your best offer.</p>
+      <div id="biddingList"></div>
+      <div class="swap-section">
+        <div class="swap-header">
+          <div>
+            <h3>Swap Kitchen Slots</h3>
+            <p>Swipe through curated kitchen availability and lock in the best time slot.</p>
+          </div>
+          <span class="badge pulse-badge">Swipe Mode</span>
+        </div>
+        <div class="swap-deck" id="swapDeck"></div>
+        <div class="swap-actions">
+          <button class="btn-outline" onclick="swipeSlot('skip')">Skip</button>
+          <button class="btn-primary" onclick="swipeSlot('accept')">Swap</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD TAB -->
+  <div class="tab-content" id="tab-leaderboard" style="display:none;">
+    <div style="padding:20px;">
+      <h2 style="margin-bottom:20px;">🏆 Leaderboard</h2>
+      <div id="leaderboardList"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-profile" style="display:none;">
+    <div class="profile-card">
+      <div class="profile-avatar" id="profileAvatar">A</div>
+      <div class="profile-info">
+        <h2 id="profileName">Anitha S</h2>
+        <p id="profileEmail">anitha@email.com · +91 98765 43210</p>
+        <div class="profile-badge" id="profileBadge"><i class="fas fa-user"></i> Customer</div>
+      </div>
+    </div>
+    <div class="settings-list">
+      <div class="settings-item" onclick="showToast('Opening edit profile...')">
+        <div class="left"><i class="fas fa-user-edit"></i><div><h4>Edit Profile</h4><p>Update your info and photo</p></div></div>
+        <i class="fas fa-chevron-right" style="color:var(--text2);"></i>
+      </div>
+      <div class="settings-item" onclick="showToast('Opening saved addresses...')">
+        <div class="left"><i class="fas fa-map-marker-alt"></i><div><h4>Saved Addresses</h4><p>Home, Work, and more</p></div></div>
+        <i class="fas fa-chevron-right" style="color:var(--text2);"></i>
+      </div>
+      <div class="settings-item" onclick="showToast('Opening payment methods...')">
+        <div class="left"><i class="fas fa-wallet"></i><div><h4>Payment Methods</h4><p>UPI, cards, wallets</p></div></div>
+        <i class="fas fa-chevron-right" style="color:var(--text2);"></i>
+      </div>
+      <div class="settings-item" onclick="showToast('Opening notification settings...')">
+        <div class="left"><i class="fas fa-bell"></i><div><h4>Notifications</h4><p>Order updates, offers</p></div></div>
+        <i class="fas fa-chevron-right" style="color:var(--text2);"></i>
+      </div>
+      <div class="settings-item" onclick="showToast('Opening FSSAI info...')">
+        <div class="left"><i class="fas fa-certificate"></i><div><h4>FSSAI License</h4><p>View license details</p></div></div>
+        <i class="fas fa-chevron-right" style="color:var(--text2);"></i>
+      </div>
+      <div class="settings-item" onclick="doLogout()">
+        <div class="left"><i class="fas fa-sign-out-alt" style="color:var(--red)!important;"></i><div><h4 style="color:var(--red);">Logout</h4><p>Sign out of your account</p></div></div>
+        <i class="fas fa-chevron-right" style="color:var(--text2);"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-item active" onclick="switchTab('home')" id="bnav-home"><i class="fas fa-home"></i>Home</div>
+    <div class="bottom-nav-item" onclick="switchTab('map')" id="bnav-map"><i class="fas fa-map"></i>Map</div>
+    <div class="bottom-nav-item" onclick="switchTab('orders')" id="bnav-orders"><i class="fas fa-receipt"></i>Orders</div>
+    <div class="bottom-nav-item" onclick="switchTab('wallet')" id="bnav-wallet"><i class="fas fa-wallet"></i>Wallet</div>
+    <div class="bottom-nav-item" onclick="switchTab('profile')" id="bnav-profile"><i class="fas fa-user"></i>Profile</div>
+  </nav>
+</div>
+
+<div class="chat-widget" id="aiChatWidget">
+  <div class="chat-header">
+    <div><span class="chat-dot"></span>AI Kitchen Assistant</div>
+    <button class="modal-close" onclick="toggleChatWidget(false)"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="chat-body" id="chatMessages">
+    <div class="chat-bubble bot">Hi, I’m CookZo Assist. Ask me about kitchens, owners, bookings, coupons, or posting availability.</div>
+  </div>
+  <div class="chat-input-row">
+    <input id="chatInput" placeholder="Type your question…" onkeydown="if(event.key==='Enter') sendChatMessage()">
+    <button class="btn-primary" onclick="sendChatMessage()">Send</button>
+  </div>
+</div>
+<div class="chat-float" onclick="toggleChatWidget(true)"><i class="fas fa-robot"></i></div>
+
+<!-- ===================== ORDER MODAL ===================== -->
+<div class="modal-overlay" id="orderModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modalKitchenName">Order from Kitchen</h3>
+      <button class="modal-close" onclick="closeModal('orderModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="orderModalContent">
+      <!-- Filled dynamically -->
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ADD MENU MODAL ===================== -->
+<div class="modal-overlay" id="addMenuModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Add Menu Item</h3>
+      <button class="modal-close" onclick="closeModal('addMenuModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="inp-group"><label>Item Name</label><input id="menuItemName" placeholder="e.g. Chettinad Chicken Curry"></div>
+      <div class="inp-group"><label>Price (₹)</label><input id="menuItemPrice" type="number" placeholder="120"></div>
+      <div class="inp-group"><label>Category</label>
+        <select id="menuItemCat"><option>Main Course</option><option>Tiffin</option><option>Rice</option><option>Dessert</option><option>Snacks</option></select>
+      </div>
+      <div class="inp-group"><label>Food Type</label>
+        <select id="menuItemType"><option value="veg">Vegetarian</option><option value="nonveg">Non-Vegetarian</option></select>
+      </div>
+      <div class="inp-group"><label>Item Photo</label>
+        <div class="upload-zone"><input type="file" accept="image/*"><i class="fas fa-utensils"></i><p>Upload food photo</p></div>
+      </div>
+      <button class="btn-primary" onclick="addMenuItem()">Add to Menu</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// ====================================================
+// STATE
+// ====================================================
+let appState = {
+  role: 'customer',
+  loginRole: 'customer',
+  appMode: 'seeker',
+  ownerType: 'professional',
+  user: null,
+  orders: [],
+  map: null,
+  markers: [],
+  polyline: null,
+  clickStage: 0,
+  startPos: null,
+  endPos: null,
+  mapInitialized: false,
+  selectedKitchen: null,
+  menuItems: [],
+  swapIndex: 0,
+  postedListings: [],
+  swapOffers: []
+};
+
+// ====================================================
+// PARTICLES
+// ====================================================
+(function createParticles(){
+  const c = document.getElementById('particles');
+  for(let i=0;i<12;i++){
+    const p = document.createElement('div');
+    p.className='particle';
+    const size = Math.random()*4+2;
+    p.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      animation-duration:${8+Math.random()*12}s;
+      animation-delay:${Math.random()*8}s;
+    `;
+    c.appendChild(p);
+  }
+})();
+
+// ====================================================
+// SPLASH
+// ====================================================
+setTimeout(()=>{
+  document.getElementById('splash').style.display='none';
+},2500);
+
+// ====================================================
+// AUTH
+// ====================================================
+function switchAuthTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('signupForm').style.display = tab==='signup'?'block':'none';
+  document.getElementById('loginForm').style.display = tab==='login'?'block':'none';
+}
+
+function setRole(r){
+  appState.role = r;
+  document.getElementById('roleCustomer').classList.toggle('active', r==='customer');
+  document.getElementById('roleKitchen').classList.toggle('active', r==='kitchen');
+  document.getElementById('kitchenFields').style.display = r==='kitchen'?'block':'none';
+}
+
+function setLoginRole(r){
+  appState.loginRole = r;
+  document.getElementById('loginRoleCustomer').classList.toggle('active', r==='customer');
+  document.getElementById('loginRoleKitchen').classList.toggle('active', r==='kitchen');
+}
+
+function previewFile(input, previewId){
+  const file = input.files[0];
+  if(!file) return;
+  const img = document.getElementById(previewId);
+  if(file.type.startsWith('image/')){
+    img.src = URL.createObjectURL(file);
+    img.style.display='block';
+  }
+}
+
+function previewKitchenPhotos(input){
+  const gallery = document.getElementById('kitchenGallery');
+  gallery.innerHTML='';
+  Array.from(input.files).slice(0,6).forEach(file=>{
+    const div = document.createElement('div');
+    div.className='upload-gallery-item';
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(file);
+    div.appendChild(img);
+    gallery.appendChild(div);
+  });
+}
+
+function proceedToContract(){
+  const name = document.getElementById('signupName').value.trim();
+  const phone = document.getElementById('signupPhone').value.trim();
+  const email = document.getElementById('signupEmail').value.trim();
+  const pass = document.getElementById('signupPass').value;
+  if(!name||!phone||!email||!pass){showToast('Please fill all required fields','error');return;}
+  if(pass.length<8){showToast('Password must be at least 8 characters','error');return;}
+  if(appState.role==='kitchen'){
+    const fssai = document.getElementById('fssaiNum').value.trim();
+    if(!fssai||fssai.length!==14){showToast('Enter a valid 14-digit FSSAI license number','error');return;}
+  }
+  showPage('contractPage');
+}
+
+function toggleAccept(){
+  const checked = document.getElementById('termsCheck').checked;
+  const btn = document.getElementById('acceptBtn');
+  btn.disabled = !checked;
+  btn.style.opacity = checked?'1':'0.5';
+}
+
+function completeSignup(){
+  appState.user = {
+    name: document.getElementById('signupName').value,
+    phone: document.getElementById('signupPhone').value,
+    email: document.getElementById('signupEmail').value,
+    role: appState.role,
+    ownerType: appState.role==='kitchen' ? appState.ownerType : undefined
+  };
+  enterApp();
+}
+
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if(!email||!pass){showToast('Enter credentials','error');return;}
+  appState.user = {name:'Anitha S',phone:'+91 98765 43210',email,role:appState.loginRole};
+  appState.role = appState.loginRole;
+  enterApp();
+}
+
+function enterApp(){
+  showPage('appPage');
+  appState.appMode = appState.role==='kitchen' ? 'owner' : 'seeker';
+  const label = appState.appMode==='owner' ? 'Kitchen Owner' : 'Kitchen Seeker';
+  document.querySelectorAll('#appModeBtn, #appModeBtnContract').forEach(el=>{ if(el) el.innerHTML = `<i class="fas fa-exchange-alt"></i> ${label}`; });
+  document.getElementById('dashTabBtn').style.display = appState.appMode==='owner' ? 'block' : 'none';
+  initAppData();
+  updateProfileUI();
+  showToast('Welcome back! 🎉');
+}
+
+function switchPageFromContract(){
+  showPage('signupPage');
+}
+
+function doLogout(){
+  appState.user=null;
+  showPage('signupPage');
+  showToast('Logged out successfully');
+}
+
+function updateProfileUI(){
+  if(!appState.user) return;
+  const n = appState.user.name || 'User';
+  document.getElementById('profileName').textContent = n;
+  document.getElementById('profileEmail').textContent = `${appState.user.email} · ${appState.user.phone}`;
+  document.getElementById('profileAvatar').textContent = n[0].toUpperCase();
+  document.querySelector('.avatar').textContent = n[0].toUpperCase();
+  const badge = document.getElementById('profileBadge');
+  if(appState.role==='kitchen'){
+    badge.innerHTML = `<i class="fas fa-store"></i> ${appState.ownerType==='professional' ? 'Professional Kitchen Owner' : 'Non-Professional Kitchen Owner'}`;
+  } else {
+    badge.innerHTML = '<i class="fas fa-user"></i> Customer';
+  }
+}
+
+// ====================================================
+// NAVIGATION
+// ====================================================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');
+  document.querySelectorAll('.nav-tab,.bottom-nav-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab).style.display='block';
+  // highlight nav
+  document.querySelectorAll('.nav-tab').forEach(t=>{
+    if(t.textContent.toLowerCase().includes(tab)||
+       (tab==='home'&&t.textContent==='Home')||
+       (tab==='map'&&t.textContent==='Map')||
+       (tab==='orders'&&t.textContent==='My Orders')||
+       (tab==='wallet'&&t.textContent==='Wallet')||
+       (tab==='bids'&&t.textContent==='Live Bids')||
+       (tab==='leaderboard'&&t.textContent==='Leaderboard')||
+       (tab==='dashboard'&&t.textContent==='Dashboard')||
+       (tab==='profile'&&t.textContent==='Profile'))
+      t.classList.add('active');
+  });
+  const bnav = document.getElementById('bnav-'+tab);
+  if(bnav) bnav.classList.add('active');
+
+  if(tab==='map' && !appState.mapInitialized){
+    setTimeout(initMap,100);
+  }
+  if(tab==='orders') renderOrders();
+  if(tab==='wallet') renderWallet();
+  if(tab==='bids') renderBidding();
+  if(tab==='leaderboard') renderLeaderboard();
+  if(tab==='dashboard') renderDashboard();
+}
+
+// ====================================================
+// KITCHEN DATA
+// ====================================================
+const kitchensData = [
+  {id:1,name:"Anitha's Home Kitchen",cuisine:"South Indian, Chettinad",rating:4.8,reviews:234,eta:"25-35",price:120,hourlyPrice:300,extraHourly:200,tag:'south',type:'veg',emoji:'🍛',fssai:true,phone:'+91 98765 11111',address:'Anna Nagar, Chennai',lat:13.0695,lng:80.2167,slots:['10:00–11:00','11:00–12:00','12:00–13:00','13:00–14:00','14:00–15:00'],photos:['🍛','🍲','🥘']},
+  {id:2,name:"Meena's Tiffin Center",cuisine:"Idli, Dosa, Pongal",rating:4.6,reviews:189,eta:"20-30",price:80,hourlyPrice:250,extraHourly:180,tag:'tiffin',type:'veg',emoji:'🥞',fssai:true,phone:'+91 98765 22222',address:'T. Nagar, Chennai',lat:13.0474,lng:80.2374,slots:['06:00–07:00','07:00–08:00','08:00–09:00','09:00–10:00','17:00–18:00'],photos:['🥞','🍢','🍱']},
+  {id:3,name:"Kumar Mess",cuisine:"Biryani, Chicken Curry",rating:4.4,reviews:312,eta:"30-45",price:180,hourlyPrice:400,extraHourly:280,tag:'biryani',type:'nonveg',emoji:'🍖',fssai:true,phone:'+91 98765 33333',address:'Egmore, Chennai',lat:13.0827,lng:80.2585,slots:['11:00–12:00','12:00–13:00','13:00–14:00','18:00–19:00','19:00–20:00'],photos:['🍖','🍛','🍗']},
+  {id:4,name:"Saraswathi Kitchen",cuisine:"North Indian, Roti, Dal",rating:4.7,reviews:156,eta:"25-40",price:140,hourlyPrice:350,extraHourly:250,tag:'north',type:'veg',emoji:'🫓',fssai:true,phone:'+91 98765 44444',address:'Adyar, Chennai',lat:13.0101,lng:80.2480,slots:['10:00–11:00','11:00–12:00','17:00–18:00','18:00–19:00','19:00–20:00'],photos:['🫓','🍞','🥘']},
+  {id:5,name:"Lakshmi Sweets & Tiffin",cuisine:"Sweets, Halwa, Payasam",rating:4.9,reviews:445,eta:"15-25",price:60,hourlyPrice:200,extraHourly:150,tag:'dessert',type:'veg',emoji:'🍮',fssai:true,phone:'+91 98765 55555',address:'Mylapore, Chennai',lat:13.0276,lng:80.2740,slots:['08:00–09:00','09:00–10:00','14:00–15:00','15:00–16:00'],photos:['🍮','🍰','🎂']},
+  {id:6,name:"The Grand Spice Kitchen",cuisine:"Biryani, Korma, Continental",rating:4.5,reviews:278,eta:"35-50",price:200,hourlyPrice:450,extraHourly:300,tag:'biryani',type:'nonveg',emoji:'🌶️',fssai:true,phone:'+91 98765 66666',address:'Velachery, Chennai',lat:12.9197,lng:80.1270,slots:['15:00–16:00','16:00–17:00','17:00–18:00','18:00–19:00','19:00–20:00'],photos:['🌶️','🍛','🍗']},
+];
+
+function initAppData(){
+  renderKitchens(kitchensData);
+  renderDashboardMenu();
+  renderSampleOrders();
+}
+
+function renderKitchens(data){
+  const grid = document.getElementById('kitchensGrid');
+  grid.innerHTML = data.map(k=>{
+    const distLabel = appState.startPos ? `${getDistance(appState.startPos.lat,appState.startPos.lng,k.lat,k.lng).toFixed(1)} km` : `${k.eta} min`;
+    const locationLabel = appState.appMode==='seeker' ? k.address.split(',')[0] : k.address;
+    const photoGallery = k.photos ? k.photos.map(p=>`<span style="font-size:20px;">${p}</span>`).join('') : '';
+    return `
+    <div class="kitchen-card">
+      <div class="kitchen-card-img">
+        <div class="img-placeholder">${photoGallery || k.emoji}</div>
+        ${k.fssai?'<div class="badge-fssai"><i class="fas fa-certificate"></i> FSSAI</div>':''}
+        <div class="badge-tag ${k.type==='veg'?'tag-veg':'tag-nonveg'}">${k.type==='veg'?'🥦 Veg':'🍖 Non-Veg'}</div>
+      </div>
+      <div class="kitchen-card-body">
+        <div class="kitchen-name">${k.name}</div>
+        <div class="kitchen-sub">${k.cuisine}</div>
+        <div class="kitchen-sub" style="color:rgba(255,105,0,0.6);font-size:11px;"><i class="fas fa-map-marker-alt"></i> ${locationLabel}</div>
+        <div class="kitchen-meta">
+          <div class="meta-item rating"><i class="fas fa-star"></i><span>${k.rating} (${k.reviews})</span></div>
+          <div class="meta-item"><i class="fas fa-route"></i>${distLabel}</div>
+          <div class="meta-item price-hourly"><i class="fas fa-rupee-sign"></i>₹${k.hourlyPrice}/hr</div>
+        </div>
+        <div class="kitchen-slots" style="margin-top:8px;">
+          <span>⏰ Available: ${k.slots.slice(0,3).join(', ')}</span>
+        </div>
+        <div class="kitchen-card-actions">
+          <button class="order-action-btn" onclick="viewKitchenDetails(${k.id})">View Details</button>
+          <button class="order-action-btn" onclick="contactKitchen(${k.id})">Contact</button>
+        </div>
+      </div>
+    </div>
+  `}).join('');
+}
+
+function filterKitchens(q){
+  const filtered = kitchensData.filter(k=>
+    k.name.toLowerCase().includes(q.toLowerCase())||
+    k.cuisine.toLowerCase().includes(q.toLowerCase())
+  );
+  renderKitchens(filtered);
+}
+
+function filterByTag(tag, el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderKitchens(tag==='all'?kitchensData:kitchensData.filter(k=>k.tag===tag));
+}
+
+// ====================================================
+// ORDER MODAL
+// ====================================================
+function openOrderModal(id){
+  const k = kitchensData.find(x=>x.id===id);
+  appState.selectedKitchen = k;
+  document.getElementById('modalKitchenName').textContent = `Order from ${k.name}`;
+  document.getElementById('orderModalContent').innerHTML = buildOrderModal(k);
+  document.getElementById('orderModal').classList.add('open');
+}
+
+function buildOrderModal(k){
+  const slots = k.slots || ['10:00–11:00','11:00–12:00','12:00–13:00','13:00–14:00','14:00–15:00','18:00–19:00','19:00–20:00','20:00–21:00'];
+  const photoGallery = k.photos ? k.photos.map(p=>`<span style="font-size:28px;margin-right:8px;">${p}</span>`).join('') : k.emoji;
+  return `
+    <div style="background:var(--bg3);border-radius:12px;padding:16px;margin-bottom:16px;display:flex;gap:14px;align-items:center;">
+      <div style="font-size:36px;">${photoGallery}</div>
+      <div>
+        <div style="font-size:16px;font-weight:600;">${k.name}</div>
+        <div style="font-size:12px;color:var(--text2);">${k.cuisine}</div>
+        <div style="font-size:12px;color:var(--teal);margin-top:4px;"><i class="fas fa-phone"></i> ${k.phone}</div>
+        <div style="font-size:12px;color:var(--text2);"><i class="fas fa-map-marker-alt"></i> ${k.address}</div>
+      </div>
+    </div>
+    <div style="background:rgba(255,105,0,0.08);border:1px solid rgba(255,105,0,0.16);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text);">
+      <strong>💰 Kitchen Pricing:</strong><br/>
+      1 Hour: <strong>₹${k.hourlyPrice}</strong> | Extra Hours: <strong>₹${k.extraHourly}/hour</strong>
+    </div>
+    <h4 style="margin-bottom:10px;">⏰ Select Time Slot</h4>
+    <div class="slot-grid">
+      ${slots.map((s,i)=>`<div class="slot" onclick="selectSlot(this,'${s}')">${s}</div>`).join('')}
+    </div>
+    <div class="inp-group" style="margin-top:14px;">
+      <label>Your Location / Address</label>
+      <textarea id="orderAddr" placeholder="Enter your full address" style="background:var(--bg3);border:1px solid var(--border);"></textarea>
+    </div>
+    <div class="inp-group">
+      <label>Special Requirements</label>
+      <input id="orderNotes" placeholder="E.g. Bring own raw materials, vegetarian options, etc." style="background:var(--bg3);border:1px solid var(--border);">
+    </div>
+    <div class="price-summary">
+      <div class="price-row"><span>Kitchen Booking (1 HR)</span><span>₹${k.hourlyPrice}</span></div>
+      <div class="price-row"><span>Platform Fee</span><span>₹15</span></div>
+      <div class="price-row total"><span>Total</span><span style="color:var(--teal);font-weight:700;">₹${k.hourlyPrice+15}</span></div>
+    </div>
+    <div class="upi-section">
+      <h4 style="margin-bottom:4px;">💳 Payment Method</h4>
+      <p style="font-size:12px;color:var(--text2);">Choose your preferred payment option</p>
+      <div class="upi-options">
+        <div class="upi-opt selected" onclick="selectPayment(this,'gpay')"><i class="fas fa-mobile-alt"></i>GPay</div>
+        <div class="upi-opt" onclick="selectPayment(this,'phonepe')"><i class="fas fa-wallet"></i>PhonePe</div>
+        <div class="upi-opt" onclick="selectPayment(this,'upi')"><i class="fas fa-qrcode"></i>UPI ID</div>
+        <div class="upi-opt" onclick="selectPayment(this,'cod')"><i class="fas fa-money-bill"></i>Cash</div>
+      </div>
+      <div class="upi-id-input" id="upiIdBox">
+        <input placeholder="Enter UPI ID e.g. name@upi" style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px;color:#fff;width:100%;font-size:13px;">
+      </div>
+    </div>
+    <button class="btn-primary" style="margin-top:16px;" onclick="placeOrder()">
+      <i class="fas fa-check-circle"></i> Confirm Order – ₹${k.price+50}
+    </button>
+  `;
+}
+
+function selectSlot(el, slot){
+  if(el.classList.contains('unavailable')) return;
+  document.querySelectorAll('.slot').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  appState.selectedSlot = slot;
+}
+
+function selectPayment(el, method){
+  document.querySelectorAll('.upi-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  appState.paymentMethod = method;
+  const upiBox = document.getElementById('upiIdBox');
+  if(upiBox) upiBox.className = 'upi-id-input'+(method==='upi'?' show':'');
+}
+
+function placeOrder(){
+  if(!appState.selectedSlot){showToast('Please select a time slot','error');return;}
+  const addr = document.getElementById('orderAddr').value.trim();
+  if(!addr){showToast('Please enter your location','error');return;}
+  const k = appState.selectedKitchen;
+  const orderId = 'CZ'+Math.floor(1000+Math.random()*9000);
+  const order = {
+    id:orderId,
+    kitchen:k.name,
+    slot:appState.selectedSlot,
+    total:k.hourlyPrice+15,
+    status:'confirmed',
+    date:new Date().toLocaleDateString('en-IN'),
+    time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})
+  };
+  appState.orders.push(order);
+  // Show confirm screen
+  document.getElementById('orderModalContent').innerHTML = `
+    <div class="confirm-screen">
+      <div class="confirm-anim"><i class="fas fa-check"></i></div>
+      <h2>Booking Confirmed! 🎉</h2>
+      <p>Your kitchen slot has been booked at ${k.name}</p>
+      <div class="order-id">${orderId}</div>
+      <p style="font-size:13px;color:var(--text2);">Time Slot: ${appState.selectedSlot}<br/>Rate: ₹${k.hourlyPrice}/hour</p>
+      <div class="tracking-steps" style="text-align:left;margin-top:24px;">
+        <div class="track-step done"><div class="step-dot"><i class="fas fa-check"></i></div><div class="step-info"><h4>Booking Confirmed</h4><p>Just now</p></div></div>
+        <div class="track-step active"><div class="step-dot"><i class="fas fa-key"></i></div><div class="step-info"><h4>Access Keys Ready</h4><p>Keys will be handed over before slot</p></div></div>
+        <div class="track-step"><div class="step-dot"><i class="fas fa-clock"></i></div><div class="step-info"><h4>Your Slot Starts</h4><p>Estimated: ${appState.selectedSlot}</p></div></div>
+        <div class="track-step"><div class="step-dot"><i class="fas fa-receipt"></i></div><div class="step-info"><h4>Checkout Complete</h4><p>Invoice will be shared</p></div></div>
+      </div>
+      <button class="btn-primary" style="margin-top:16px;" onclick="closeModal('orderModal');switchTab('orders');">View My Bookings</button>
+    </div>
+  `;
+  document.getElementById('modalKitchenName').textContent = 'Booking Confirmed!';
+  // Push notification
+  addNotification(`Kitchen booked at ${k.name}!`,'green','check');
+  showToast(`Booking ${orderId} confirmed! 🎉`);
+}
+
+function addNotification(text, type, icon){
+  const panel = document.getElementById('notifPanel');
+  const item = document.createElement('div');
+  item.className = 'notif-item unread';
+  item.innerHTML = `<div class="notif-icon ${type}"><i class="fas fa-${icon}"></i></div><div class="notif-content"><p>${text}</p><span>Just now</span></div>`;
+  panel.insertBefore(item, panel.children[1]);
+  document.querySelector('.notif-dot').style.display='block';
+}
+
+// ====================================================
+// ORDERS LIST
+// ====================================================
+function renderSampleOrders(){
+  appState.orders = [
+    {id:'CZ1001',kitchen:"Meena's Tiffin Center",slot:'09:00–10:00',total:265,status:'delivered',date:'06/04/2025',time:'09:30'},
+    {id:'CZ1042',kitchen:"Anitha's Home Kitchen",slot:'13:00–14:00',total:315,status:'confirmed',date:'07/04/2025',time:'12:15'},
+  ];
+}
+
+function renderOrders(){
+  const list = document.getElementById('ordersList');
+  if(!appState.orders.length){list.innerHTML='<p style="color:var(--text2);text-align:center;padding:40px 20px;"><i class="fas fa-inbox"></i><br/><br/>No bookings yet. <a href="#" onclick="switchTab(\'home\');" style="color:var(--teal);text-decoration:underline;">Browse kitchens</a></p>';return;}
+  list.innerHTML = appState.orders.slice().reverse().map(o=>{
+    const statusClass = {
+      'confirmed': 'status-new',
+      'delivered': 'status-done',
+      'pending': 'status-pending',
+      'cancelled': 'status-cancel'
+    }[o.status] || 'status-pending';
+    const statusLabel = {
+      'confirmed': 'Confirmed',
+      'delivered': 'Delivered',
+      'pending': 'Pending',
+      'cancelled': 'Cancelled'
+    }[o.status] || 'Pending';
+    return `
+      <div class="order-card">
+        <div class="order-card-head">
+          <div>
+            <div class="order-card-title">${o.kitchen}</div>
+            <div class="order-card-meta"><i class="fas fa-clock"></i> ${o.slot} · ${o.date} · ${o.time}</div>
+          </div>
+          <div class="order-status ${statusClass}">${statusLabel}</div>
+        </div>
+        <div class="order-id-box">Order ID: ${o.id}</div>
+        <div class="order-card-footer">
+          <div style="font-size:18px;font-weight:700;color:var(--teal);">₹${o.total}</div>
+          <div class="order-actions">
+            <button class="order-action-btn" onclick="showToast('Viewing details for ${o.id}...')">View Details</button>
+            <button class="order-action-btn" onclick="showToast('Contacting ${o.kitchen}...')">Contact</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ====================================================
+// DASHBOARD
+// ====================================================
+const dashOrders = [
+  {id:'CZ2011',customer:'Ravi K',items:'Chettinad Chicken + Rice',total:220,status:'new'},
+  {id:'CZ2009',customer:'Priya M',items:'Idli × 4 + Sambar',total:100,status:'prep'},
+  {id:'CZ2007',customer:'Suresh R',items:'Biryani Full',total:200,status:'done'},
+  {id:'CZ2003',customer:'Meena T',items:'Dosa × 2',total:80,status:'done'},
+];
+
+function renderDashboard(){
+  const list = document.getElementById('dashOrdersList');
+  list.innerHTML = dashOrders.map(o=>`
+    <div class="order-row">
+      <div>
+        <div style="font-size:14px;font-weight:600;">${o.customer}</div>
+        <div style="font-size:12px;color:var(--text2);">${o.items}</div>
+        <div style="font-size:11px;color:var(--text2);font-family:monospace;">${o.id}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="order-status status-${o.status}">${{new:'New Order',prep:'Preparing',done:'Delivered',cancel:'Cancelled'}[o.status]}</div>
+        <div style="font-size:13px;color:var(--teal);">₹${o.total}</div>
+      </div>
+    </div>
+  `).join('');
+  renderDashboardMenu();
+  renderOwnerInbox();
+  renderPostedListings();
+  renderPreviousOwners();
+
+  // Render revenue chart
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{
+        label: 'Revenue (₹)',
+        data: [3200, 2800, 3500, 4100, 3800, 4200, 3840],
+        borderColor: '#ff6900',
+        backgroundColor: 'rgba(255,105,0,0.1)',
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255,255,255,0.1)' },
+          ticks: { color: '#aaa' }
+        },
+        x: {
+          grid: { color: 'rgba(255,255,255,0.1)' },
+          ticks: { color: '#aaa' }
+        }
+      }
+    }
+  });
+}
+
+const defaultMenu = [
+  {name:'Chettinad Chicken Curry',price:160,cat:'Main Course',type:'nonveg'},
+  {name:'Idli Sambar (4pcs)',price:80,cat:'Tiffin',type:'veg'},
+  {name:'Veg Biryani',price:140,cat:'Rice',type:'veg'},
+  {name:'Filter Coffee',price:30,cat:'Beverages',type:'veg'},
+];
+
+function renderDashboardMenu(){
+  if(!appState.menuItems.length) appState.menuItems=[...defaultMenu];
+  document.getElementById('menuGrid').innerHTML = appState.menuItems.map((item,i)=>`
+    <div class="menu-card">
+      <div class="menu-actions">
+        <div class="icon-btn del" onclick="deleteMenuItem(${i})"><i class="fas fa-trash"></i></div>
+      </div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px;padding-right:40px;">${item.name}</div>
+      <div style="font-size:12px;color:var(--text2);">${item.cat}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+        <span style="color:var(--teal);font-weight:700;">₹${item.price}</span>
+        <span class="badge-tag ${item.type==='veg'?'tag-veg':'tag-nonveg'}" style="position:static;font-size:10px;padding:2px 8px;">
+          ${item.type==='veg'?'Veg':'Non-Veg'}
+        </span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAddMenu(){document.getElementById('addMenuModal').classList.add('open');}
+function addMenuItem(){
+  const name=document.getElementById('menuItemName').value.trim();
+  const price=document.getElementById('menuItemPrice').value;
+  const cat=document.getElementById('menuItemCat').value;
+  const type=document.getElementById('menuItemType').value;
+  if(!name||!price){showToast('Fill item name and price','error');return;}
+  appState.menuItems.push({name,price:parseInt(price),cat,type});
+  renderDashboardMenu();
+  closeModal('addMenuModal');
+  showToast('Menu item added!');
+}
+function deleteMenuItem(i){
+  appState.menuItems.splice(i,1);
+  renderDashboardMenu();
+}
+
+function renderOwnerInbox(){
+  const list = document.getElementById('ownerInboxList');
+  if(!list) return;
+  const inquiries = [
+    {name:'Priya M',channel:'Chat',message:'Looking for a 12-1pm slot',time:'2m ago'},
+    {name:'Ravi T',channel:'Call',message:'Can you share kitchen equipment details?',time:'9m ago'},
+    {name:'Sneha R',channel:'Chat',message:'Need an extra hour after 2pm',time:'14m ago'},
+  ];
+  list.innerHTML = inquiries.map(i=>`
+    <div class="inquiry-card">
+      <div>
+        <div class="inquiry-name">${i.name}</div>
+        <div class="inquiry-meta"><i class="fas fa-${i.channel==='Chat'?'comment':'phone'}"></i>${i.channel} · ${i.time}</div>
+      </div>
+      <div class="inquiry-message">${i.message}</div>
+      <div class="inquiry-actions">
+        <button class="order-action-btn" onclick="openChatWithOwner('${i.name}')">Chat</button>
+        <button class="order-action-btn" onclick="showToast('Calling ${i.name}...')">Call</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPostedListings(){
+  const list = document.getElementById('postedListingsList');
+  if(!list) return;
+  const listings = appState.postedListings.length ? appState.postedListings : [
+    {code:'TKZ-12345',kitchen:'Anitha\'s Home Kitchen',slot:'13:00–14:00',rate:300,type:'Non-Professional'},
+    {code:'TKZ-23456',kitchen:'Chef\'s Hub Pro Kitchen',slot:'15:00–16:00',rate:420,type:'Professional'},
+  ];
+  list.innerHTML = listings.map(l=>`
+    <div class="listing-card">
+      <div>
+        <div class="listing-title">${l.kitchen}</div>
+        <div class="listing-meta">${l.type} · ${l.slot}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-weight:700;color:var(--teal);">₹${l.rate}/hr</div>
+        <div style="font-size:12px;color:var(--text2);">${l.code}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderPreviousOwners(){
+  const list = document.getElementById('previousOwnersList');
+  if(!list) return;
+  const owners = [
+    {name:'Meena T',note:'Used home kitchen for breakfast tiffin',time:'Apr 4'},
+    {name:'Ravi K',note:'Booked professional kitchen for biryani prep',time:'Apr 2'},
+    {name:'Sneha S',note:'Rented slot for cake production',time:'Mar 30'},
+  ];
+  list.innerHTML = owners.map(o=>`
+    <div class="owner-history-card">
+      <div><div class="listing-title">${o.name}</div><div class="listing-meta">${o.note}</div></div>
+      <div style="font-size:12px;color:var(--text2);">${o.time}</div>
+    </div>
+  `).join('');
+}
+
+function enterOwnerPost(){
+  appState.role='kitchen';
+  appState.appMode='owner';
+  showPage('appPage');
+  switchTab('dashboard');
+  document.getElementById('dashTabBtn').style.display='block';
+  document.querySelectorAll('#appModeBtn, #appModeBtnContract').forEach(el=>{ if(el) el.innerHTML = `<i class="fas fa-exchange-alt"></i> Kitchen Owner`; });
+  updateProfileUI();
+  renderDashboard();
+  showToast('Owner mode enabled. Post your kitchen listing below.');
+}
+
+function viewKitchenDetails(id){
+  const k = kitchensData.find(x=>x.id===id);
+  if(!k) return;
+  document.getElementById('modalKitchenName').textContent = `${k.name} Details`;
+  document.getElementById('orderModalContent').innerHTML = `
+    <div style="padding:16px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+        <div style="font-size:40px;">${k.emoji}</div>
+        <div>
+          <div style="font-size:20px;font-weight:700;">${k.name}</div>
+          <div style="font-size:13px;color:var(--text2);">${k.cuisine}</div>
+          <div style="font-size:12px;color:var(--text2);">${k.type==='veg'?'Vegetarian':'Non-Vegetarian'} · ${k.fssai?'FSSAI Verified':''}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px;">
+        <div class="swap-info">Hourly Rate<br><strong>₹${k.hourlyPrice}</strong></div>
+        <div class="swap-info">Extra Hour<br><strong>₹${k.extraHourly}</strong></div>
+      </div>
+      <div style="margin-bottom:16px;"><strong>Available Slots</strong><div style="color:var(--text2);margin-top:8px;">${k.slots.join(' · ')}</div></div>
+      <div style="margin-bottom:16px;">
+        <strong>Kitchen Description</strong>
+        <div style="color:var(--text2);margin-top:8px;">A premium kitchen trusted by local brands, ideal for hourly prep and early evening batches.</div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <button class="btn-primary" style="flex:1;min-width:140px;" onclick="openOrderModal(${k.id})">Book Slot</button>
+        <button class="btn-outline" style="flex:1;min-width:140px;" onclick="contactKitchen(${k.id})">Contact Owner</button>
+      </div>
+    </div>
+  `;
+  document.getElementById('orderModal').classList.add('open');
+}
+
+function contactKitchen(id){
+  const k = kitchensData.find(x=>x.id===id);
+  if(!k) return;
+  openChatWithOwner(k.name);
+}
+
+function openChatWithOwner(name){
+  toggleChatWidget(true);
+  const messages = document.getElementById('chatMessages');
+  messages.innerHTML += `<div class="chat-bubble bot">Connected to ${name}. You can ask about kitchen availability and costs.</div>`;
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function toggleChatWidget(open){
+  const widget = document.getElementById('aiChatWidget');
+  if(open) widget.classList.add('open'); else widget.classList.remove('open');
+}
+
+function sendChatMessage(){
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if(!text) return;
+  const messages = document.getElementById('chatMessages');
+  messages.innerHTML += `<div class="chat-bubble user">${text}</div>`;
+  input.value='';
+  messages.scrollTop = messages.scrollHeight;
+  setTimeout(()=>{
+    messages.innerHTML += `<div class="chat-bubble bot">Great question! I can help you post listings, review offers, and manage chat inquiries.</div>`;
+    messages.scrollTop = messages.scrollHeight;
+  }, 600);
+};
+
+
+// ====================================================
+// MAP
+// ====================================================
+function initMap(){
+  if(appState.mapInitialized) return;
+  appState.map = L.map('mainMap').setView([13.0827,80.2707],13);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',{ 
+    attribution:'© OpenStreetMap'
+  }).addTo(appState.map);
+
+  // Add kitchen markers
+  kitchensData.forEach(k=>{
+    const marker = L.circleMarker([k.lat,k.lng],{radius:10,fillColor:'#ff6900',color:'#fff',fillOpacity:0.9,weight:2})
+      .addTo(appState.map)
+      .bindPopup(`<b>${k.name}</b><br>${k.cuisine}<br>⭐${k.rating} · 📞${k.phone}`);
+    k.marker = marker;
+    appState.markers.push(marker);
+  });
+
+  appState.map.on('click', e=>{
+    const latlng = e.latlng;
+    if(appState.clickStage===0){
+      appState.startPos = latlng;
+      document.getElementById('mapFrom').value = latlng.lat.toFixed(4)+','+latlng.lng.toFixed(4);
+      addMapMarker(latlng,'#ff6900');
+      appState.clickStage=1;
+    } else {
+      appState.endPos = latlng;
+      document.getElementById('mapTo').value = latlng.lat.toFixed(4)+','+latlng.lng.toFixed(4);
+      addMapMarker(latlng,'#ff4444');
+      appState.clickStage=0;
+    }
+  });
+
+  appState.mapInitialized=true;
+}
+
+function toggleAppMode(){
+  const isOwner = appState.appMode==='owner';
+  appState.appMode = isOwner ? 'seeker' : 'owner';
+  const btn = document.getElementById('appModeBtn');
+  btn.innerHTML = `<i class="fas fa-exchange-alt"></i> ${appState.appMode==='owner' ? 'Kitchen Owner' : 'Kitchen Seeker'}`;
+  document.getElementById('dashTabBtn').style.display = appState.appMode==='owner' ? 'block' : 'none';
+  showToast(`Switched to ${appState.appMode==='owner' ? 'Kitchen Owner' : 'Kitchen Seeker'}`);
+}
+
+function parseLocationInput(value){
+  if(!value) return null;
+  const parts = value.split(',').map(p=>p.trim());
+  if(parts.length===2 && !isNaN(parts[0]) && !isNaN(parts[1])){
+    return {lat:parseFloat(parts[0]),lng:parseFloat(parts[1])};
+  }
+  const match = kitchensData.find(k=>
+    k.name.toLowerCase().includes(value.toLowerCase())||
+    k.cuisine.toLowerCase().includes(value.toLowerCase())||
+    k.address.toLowerCase().includes(value.toLowerCase())
+  );
+  return match ? {lat:match.lat,lng:match.lng,kitchen:match} : null;
+}
+
+// ====================================================
+// WALLET
+// ====================================================
+function renderWallet(){
+  const couponBox = document.getElementById('couponList');
+  const list = document.getElementById('walletTransactions');
+  const coupons = [
+    {code:'COOK150',label:'₹150 off',subtitle:'On next kitchen booking',active:true},
+    {code:'SWAP20',label:'20% off',subtitle:'Swap booking fee waived',active:false},
+    {code:'FREEHOUR',label:'1 Free Hour',subtitle:'Valid for first professional kitchen booking',active:true},
+  ];
+  const transactions = [
+    {type:'debit',desc:'Booking – Anitha\'s Home Kitchen',amt:315,date:'Apr 7, 2025',icon:'🏪'},
+    {type:'credit',desc:'Cashback Reward (5th booking)',amt:200,date:'Apr 4, 2025',icon:'🎁'},
+    {type:'debit',desc:'Booking – Meena\'s Tiffin Center',amt:265,date:'Apr 6, 2025',icon:'🏪'},
+    {type:'credit',desc:'Referral Bonus',amt:100,date:'Mar 30, 2025',icon:'👥'},
+    {type:'debit',desc:'Booking – Kumar Mess',amt:400,date:'Mar 28, 2025',icon:'🏪'},
+  ];
+  couponBox.innerHTML = coupons.map(c=>`
+    <div class="coupon-card ${c.active?'active':''}">
+      <div>
+        <div class="coupon-label">${c.label}</div>
+        <div class="coupon-subtitle">${c.subtitle}</div>
+      </div>
+      <button class="btn-outline" onclick="redeemCoupon('${c.code}')">${c.active?'Redeem':'Unlock'}</button>
+    </div>
+  `).join('');
+  list.innerHTML = transactions.map(t=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;">
+      <div style="display:flex;align-items:center;gap:12px;flex:1;">
+        <div style="font-size:24px;">${t.icon}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:600;">${t.desc}</div>
+          <div style="font-size:12px;color:var(--text2);">${t.date}</div>
+        </div>
+      </div>
+      <div style="text-align:right;font-weight:700;">
+        <div style="color:${t.type==='credit'?'#64c864':'var(--red)'};">
+          ${t.type==='credit'?'+':'−'}₹${t.amt}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function redeemCoupon(code){
+  showToast(`Coupon ${code} applied!`);
+}
+
+// ====================================================
+// LIVE BIDDING
+// ====================================================
+function renderBidding(){
+  const list = document.getElementById('biddingList');
+  const bids = [
+    {id:'B001',kitchen:'The Grand Spice Kitchen',loc:'Anna Nagar',base:400,highest:520,bidder:'Arjun K',ends:'3:59',slots:'3PM – 6PM',bids:3,type:'Professional',description:'Premium restaurant kitchen with chef-ready equipment.'},
+    {id:'B002',kitchen:'Saraswathi Kitchen',loc:'Adyar',base:350,highest:350,bidder:'You lead',ends:'5:42',slots:'5PM – 8PM',bids:1,type:'Home Kitchen',description:'Fully sanitized kitchen with flexible slot options.'},
+    {id:'B003',kitchen:'Kumar Mess',loc:'Egmore',base:400,highest:460,bidder:'Ravi T',ends:'2:15',slots:'6PM – 9PM',bids:2,type:'Professional',description:'High-capacity kitchen ideal for non-veg and biryani batches.'},
+  ];
+  list.innerHTML = bids.map(b=>`
+    <div class="bidding-card">
+      <div class="bidding-card-head">
+        <div>
+          <div class="bid-title">${b.kitchen}</div>
+          <div class="bid-meta"><i class="fas fa-map-marker-alt"></i> ${b.loc}</div>
+          <div class="bid-meta"><i class="fas fa-clock"></i> ${b.slots}</div>
+          <div class="bid-meta">${b.description}</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="bid-rate">₹${b.highest}</div>
+          <div class="bid-status">Base: ₹${b.base} · ${b.bids} ${b.bids===1?'bid':'bids'}</div>
+          <div class="bid-highlight">Leading Bid: ${b.bidder}</div>
+        </div>
+      </div>
+      <div class="bid-input-row">
+        <input class="bid-input" id="bidInput-${b.id}" placeholder="Your offer (e.g ₹550)" />
+        <button class="bid-action" onclick="submitBid('${b.id}')"><i class="fas fa-check"></i> Bid</button>
+      </div>
+    </div>
+  `).join('');
+  renderSwapDeck();
+}
+
+function submitBid(id){
+  const input = document.getElementById(`bidInput-${id}`);
+  if(!input || !input.value.trim()){showToast('Enter a bid amount','error');return;}
+  showToast(`Bid placed: ₹${input.value.trim()} on ${id}`);
+}
+
+function renderSwapDeck(){
+  if(!appState.swapOffers.length){
+    appState.swapOffers = [
+      {name:"Anitha's Home Kitchen",loc:'Anna Nagar',slot:'10:00–11:00',hourly:300,type:'Non-Professional',rating:4.8,amenities:'Traditional stove · Instant prep'},
+      {name:"Chef's Hub Pro Kitchen",loc:'T. Nagar',slot:'14:00–15:00',hourly:420,type:'Professional',rating:4.9,amenities:'Combi oven · Cold storage'},
+      {name:"Saraswathi Kitchen",loc:'Adyar',slot:'18:00–19:00',hourly:350,type:'Professional',rating:4.7,amenities:'Dedicated prep table · Sanitized zone'},
+    ];
+  }
+  const deck = document.getElementById('swapDeck');
+  const offer = appState.swapOffers[appState.swapIndex];
+  if(!offer){
+    deck.innerHTML = `<div class="swap-card" style="position:relative;transform:none;opacity:1;">No more swap matches. Refresh later.</div>`;
+    return;
+  }
+  deck.innerHTML = `
+    <div class="swap-card" id="swapCard">
+      <div class="swap-card-tag">${offer.type}</div>
+      <div class="swap-card-title">${offer.name}</div>
+      <div class="swap-card-line"><i class="fas fa-map-marker-alt"></i>${offer.loc}</div>
+      <div class="swap-card-line"><i class="fas fa-clock"></i>${offer.slot}</div>
+      <div class="swap-card-line"><i class="fas fa-star"></i>${offer.rating} stars · ${offer.amenities}</div>
+      <div class="swap-card-detail">
+        <div class="swap-info">Hourly Rate<br><strong>₹${offer.hourly}</strong></div>
+        <div class="swap-info">Type<br><strong>${offer.type}</strong></div>
+      </div>
+    </div>
+  `;
+}
+
+function swipeSlot(action){
+  const card = document.getElementById('swapCard');
+  if(!card){showToast('No swap card available','error');return;}
+  card.classList.add(action==='accept'?'swipe-right':'swipe-left');
+  setTimeout(()=>{
+    if(action==='accept'){
+      const offer = appState.swapOffers[appState.swapIndex];
+      showToast(`Slot saved: ${offer.name} · ${offer.slot}`);
+    } else {
+      showToast('Slot skipped');
+    }
+    appState.swapIndex++;
+    renderSwapDeck();
+  },280);
+}
+
+function createSlotListing(){
+  const kitchen = document.getElementById('postKitchenName').value.trim();
+  const location = document.getElementById('postKitchenLocation').value.trim();
+  const type = document.getElementById('postType').value;
+  const slot = document.getElementById('postSlot').value;
+  const hourly = document.getElementById('postHourly').value.trim();
+  const extra = document.getElementById('postExtra').value.trim();
+  if(!kitchen||!location||!slot||!hourly||!extra){showToast('Complete all listing details','error');return;}
+  const code = `TKZ-${Math.floor(10000+Math.random()*90000)}`;
+  appState.postedListings.unshift({kitchen,location,type,slot,hourly,extra,code});
+  document.getElementById('listingCodeBox').innerHTML = `Listing created: <strong>${code}</strong> · ${type} · ${slot}`;
+  showToast('Kitchen listing generated successfully!');
+}
+
+// ====================================================
+// LEADERBOARD
+// ====================================================
+function renderLeaderboard(){
+  const list = document.getElementById('leaderboardList');
+  const leaders = [
+    {rank:1,name:'Krish S',pts:2340,icon:'👨',role:'Pro Kitchen User',badge:'Elite'},
+    {rank:2,name:'Priya M',pts:1890,icon:'👩',role:'Active User',badge:'Gold'},
+    {rank:3,name:'Arjun K',pts:1650,icon:'👨',role:'Regular User',badge:'Silver'},
+    {rank:4,name:'Meena T',pts:1420,icon:'👩',role:'Active User',badge:'Silver'},
+    {rank:5,name:'Ravi T',pts:1210,icon:'👨',role:'Regular User',badge:''},
+    {rank:6,name:'Sneha R',pts:980,icon:'👩',role:'New User',badge:''},
+  ];
+  list.innerHTML = leaders.map(l=>`
+    <div style="display:flex;align-items:center;gap:14px;padding:16px;background:${l.rank<=3?'rgba(255,105,0,0.06)':'var(--bg2)'};border:1px solid ${l.rank<=3?'rgba(255,105,0,0.2)':'var(--border)'};border-radius:12px;margin-bottom:10px;">
+      <div style="font-weight:800;font-size:20px;color:${l.rank===1?'var(--teal)':l.rank===2?'var(--orange)':l.rank===3?'#aaa':'var(--text2)'};width:32px;text-align:center;">
+        ${l.rank===1?'🥇':l.rank===2?'🥈':l.rank===3?'🥉':'#'+l.rank}
+      </div>
+      <div style="font-size:20px;">${l.icon}</div>
+      <div style="flex:1;">
+        <div style="font-weight:600;font-size:14px;">${l.name}</div>
+        <div style="font-size:12px;color:var(--text2);">${l.role}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:18px;font-weight:800;color:var(--teal);">⭐ ${l.pts}</div>
+        ${l.badge?`<div style="font-size:11px;color:var(--text2);margin-top:2px;background:var(--bg3);padding:2px 6px;border-radius:4px;">${l.badge}</div>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function getDistance(lat1,lng1,lat2,lng2){
+  const toRad = x=>x*Math.PI/180;
+  const R = 6371;
+  const dLat = toRad(lat2-lat1);
+  const dLng = toRad(lng2-lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2)) * Math.sin(dLng/2)**2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+function searchMapKitchen(){
+
+  const q=document.getElementById('mapSearch').value.trim();
+  if(!q){showToast('Type a kitchen or cuisine to search','error');return;}
+  const match=kitchensData.find(k=>
+    k.name.toLowerCase().includes(q.toLowerCase())||
+    k.cuisine.toLowerCase().includes(q.toLowerCase())||
+    k.address.toLowerCase().includes(q.toLowerCase())||
+    k.tag.toLowerCase()===q.toLowerCase()
+  );
+  if(!match){showToast('No matching kitchen found','error');return;}
+  appState.map.setView([match.lat,match.lng],14,{animate:true});
+  if(match.marker) match.marker.openPopup();
+  document.getElementById('mapTo').value = match.name;
+  appState.endPos = {lat:match.lat,lng:match.lng};
+  showToast(`${match.name} found on the map`);
+}
+
+function setOwnerType(type){
+  appState.ownerType = type;
+  document.getElementById('typePro').classList.toggle('active', type==='professional');
+  document.getElementById('typeNonPro').classList.toggle('active', type!=='professional');
+}
+
+function addMapMarker(pos,color){
+  const m = L.circleMarker(pos,{radius:8,fillColor:color,color:'#fff',fillOpacity:1,weight:2}).addTo(appState.map);
+  appState.markers.push(m);
+}
+
+async function calcRoute(){
+  const fromInput = document.getElementById('mapFrom').value.trim();
+  const toInput = document.getElementById('mapTo').value.trim();
+  const fromLoc = parseLocationInput(fromInput) || appState.startPos;
+  const toLoc = parseLocationInput(toInput) || appState.endPos;
+  if(!fromLoc || !toLoc){showToast('Select or type both start and destination','error');return;}
+  appState.startPos = fromLoc;
+  appState.endPos = toLoc;
+  try{
+    const url=`https://router.project-osrm.org/route/v1/driving/${appState.startPos.lng},${appState.startPos.lat};${appState.endPos.lng},${appState.endPos.lat}?overview=full&geometries=geojson`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const r = data.routes[0];
+    if(appState.polyline) appState.map.removeLayer(appState.polyline);
+    appState.polyline = L.geoJSON(r.geometry,{style:{color:'#ff6900',weight:4,opacity:0.8}}).addTo(appState.map);
+
+    let dist = r.distance/1000;
+    let time = r.duration/60;
+    const mode = document.getElementById('mapMode').value;
+    const climate = document.getElementById('mapClimate').value;
+    const delivery = document.getElementById('mapDelivery').value;
+    if(mode==='eco'){time*=1.2;dist*=0.9;}
+    if(mode==='turbo'){time*=0.7;dist*=1.1;}
+    if(climate==='rain') time*=1.3;
+    if(climate==='storm') time*=1.6;
+    if(delivery==='express') time*=0.7;
+    if(delivery==='priority') time*=0.85;
+
+    document.getElementById('statDist').textContent = dist.toFixed(1)+'km';
+    document.getElementById('statEta').textContent = Math.round(time)+'min';
+    document.getElementById('statEco').textContent = Math.max(0,100-dist*2).toFixed(0)+'%';
+    document.getElementById('mapAiText').textContent = `Optimized via ${mode} mode, ${climate} weather, ${delivery} priority.`;
+    document.getElementById('mapInfoPanel').classList.add('open');
+  } catch(e){
+    showToast('Route fetch failed. Check connection.','error');
+  }
+}
+
+function resetMap(){
+  appState.markers.forEach(m=>appState.map.removeLayer(m));
+  if(appState.polyline) appState.map.removeLayer(appState.polyline);
+  appState.markers=[];
+  appState.polyline=null;
+  appState.startPos=null;
+  appState.endPos=null;
+  appState.clickStage=0;
+  document.getElementById('mapFrom').value='';
+  document.getElementById('mapTo').value='';
+  document.getElementById('mapInfoPanel').classList.remove('open');
+  // Re-add kitchen markers
+  kitchensData.forEach(k=>{
+    const m=L.circleMarker([k.lat,k.lng],{radius:10,fillColor:'#ff6900',color:'#fff',fillOpacity:0.9,weight:2})
+      .addTo(appState.map)
+      .bindPopup(`<b>${k.name}</b><br>⭐${k.rating}`);
+    k.marker = m;
+    appState.markers.push(m);
+  });
+}
+
+// ====================================================
+// UI HELPERS
+// ====================================================
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+}
+
+function toggleNotif(){
+  document.getElementById('notifPanel').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  const panel=document.getElementById('notifPanel');
+  if(!e.target.closest('.nav-icon-btn')&&!e.target.closest('#notifPanel')){
+    panel.classList.remove('open');
+  }
+});
+
+let toastTimer;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show'+(type?' '+type:'');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>
